@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Music | Essy Singer</title>
+  <meta name="description" content="Listen to music by Essy Singer." />
+  <meta property="og:title" content="Music | Essy Singer" />
+  <meta property="og:description" content="Singles and releases with streaming links." />
+  <meta property="og:image" content="./assets/og-image.jpg" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/music.html" />
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+  <link rel="shortcut icon" href="./assets/favicon.svg?v=2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./css/custom.css" />
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main-content" class="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <section class="reveal relative overflow-hidden rounded-3xl border border-amber-200/20 bg-black/40 p-8 sm:p-10">
+      <div class="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-amber-300/20 blur-2xl"></div>
+      <p id="music-eyebrow" class="text-xs uppercase tracking-[0.16em] text-amber-200">Music</p>
+      <h1 id="music-title" class="mt-2 font-display text-5xl text-white">Songs For Worship</h1>
+      <p id="music-subtitle" class="mt-3 max-w-2xl text-sm text-amber-50/80">A focused catalog of songs, moments, and melodies that carry hope.</p>
+      <div id="music-tags" class="mt-5 flex flex-wrap gap-2"></div>
+    </section>
+
+    <section id="music-list" class="mt-8 grid gap-6 sm:grid-cols-2"></section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="./js/app.js" defer></script>
+  <script src="./js/music.js" defer></script>
+</body>
+</html>
+

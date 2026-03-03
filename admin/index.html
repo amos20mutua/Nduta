@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-admin-locked="true">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Essy Singer Admin</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="shortcut icon" href="../assets/favicon.svg?v=2" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../js/admin-gate.js" defer></script>
+  <link rel="stylesheet" href="../css/custom.css" />
+  <style>
+    html[data-admin-locked="true"] main { visibility: hidden; }
+  </style>
+</head>
+<body class="page-ready">
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <h1 class="font-display text-4xl text-white">Admin Dashboard</h1>
+    <p class="mt-2 text-sm text-amber-50/80">Netlify Identity has been removed from admin access.</p>
+
+    <section class="mt-6 grid gap-4 sm:grid-cols-2">
+      <a href="./editor.html" class="section-shell block p-5 sm:col-span-2">
+        <h2 class="font-display text-2xl text-white">Website Content Editor</h2>
+        <p class="mt-2 text-sm text-amber-50/80">Edit homepage, events, music, media, settings, and theme from one screen.</p>
+      </a>
+      <a href="../tickets-dashboard.html" class="section-shell block p-5">
+        <h2 class="font-display text-2xl text-white">Tickets Dashboard</h2>
+        <p class="mt-2 text-sm text-amber-50/80">View issued tickets, scan logs, and export CSV.</p>
+      </a>
+      <a href="../scan.html" class="section-shell block p-5">
+        <h2 class="font-display text-2xl text-white">Ticket Scanner</h2>
+        <p class="mt-2 text-sm text-amber-50/80">Validate QR tickets and check attendees in.</p>
+      </a>
+    </section>
+  </main>
+</body>
+</html>
+

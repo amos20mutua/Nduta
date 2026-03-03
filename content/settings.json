@@ -1,0 +1,55 @@
+{
+  "siteName": "Essy Singer",
+  "logoText": "Essy Singer",
+  "tagline": "Worship Minister | Music Educator",
+  "location": "Nairobi, Kenya",
+  "contact": {
+    "email": "missgikaba@gmail.com",
+    "phone": "+254700000000"
+  },
+  "nav": {
+    "items": [
+      { "label": "Home", "href": "/index.html" },
+      { "label": "Music", "href": "/music.html" },
+      { "label": "Events", "href": "/events.html" },
+      { "label": "Contact", "href": "/contact.html" }
+    ]
+  },
+  "socialLinks": {
+    "youtube": "",
+    "instagram": "",
+    "tiktok": "",
+    "facebook": "",
+    "spotify": "",
+    "appleMusic": ""
+  },
+  "streamingLinks": {
+    "spotify": "",
+    "appleMusic": "",
+    "youtube": ""
+  },
+  "footer": {
+    "legalText": "All rights reserved.",
+    "links": [
+      { "label": "Privacy", "href": "/privacy.html" },
+      { "label": "Terms", "href": "/terms.html" }
+    ]
+  },
+  "mpesa": {
+    "enabled": true,
+    "paybillOrTill": "000000",
+    "accountReference": "ESSY TICKETS",
+    "instructions": "Open M-Pesa Express, enter the event amount, confirm the prompt, then keep your SMS as proof."
+  },
+  "api": {
+    "functionsBaseUrl": "https://xxyiybdbqrhdaxhxuvmw.functions.supabase.co",
+    "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4eWl5YmRicXJoZGF4aHh1dm13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NDc0MzEsImV4cCI6MjA4ODAyMzQzMX0.K3F8USlUZlAUvZEWucC_jSiQcvL1ypT9ucNdOCwNDrQ"
+  },
+  "eventsPage": {
+    "enabled": true,
+    "eyebrow": "Events",
+    "title": "Worship Nights and Gatherings",
+    "subtitle": "Buy tickets with M-Pesa for upcoming events.",
+    "tags": []
+  }
+}

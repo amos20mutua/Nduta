@@ -1,0 +1,10 @@
+{
+  "name": "essy-singer-site",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8",
+    "jsonwebtoken": "^9.0.2",
+    "qrcode": "^1.5.4"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "artistName": "Essy Singer",
+  "tagline": "Worship Minister • Music Educator",
+  "location": "Nairobi, Kenya",
+  "email": "missgikaba@gmail.com",
+  "phone": "+254700000000",
+  "socials": {
+    "youtube": "",
+    "instagram": "",
+    "tiktok": "",
+    "facebook": "",
+    "spotify": "",
+    "appleMusic": ""
+  },
+  "heroTitle": "ESSY SINGER",
+  "heroSubtitle": "Worship Minister • Music Educator",
+  "heroImage": "/assets/hero.jpg",
+  "scriptureLine": "Creating sacred worship experiences that draw hearts back to Jesus.",
+  "featuredVideoYoutubeId": "dQw4w9WgXcQ",
+  "mpesa": {
+    "enabled": true,
+    "paybillOrTill": "000000",
+    "accountReference": "ESSY TICKETS",
+    "instructions": "Open M-Pesa Express, enter the event amount, confirm the prompt, then keep your SMS as proof."
+  },
+  "primaryCta": {
+    "text": "Book Essy",
+    "href": "/contact.html"
+  },
+  "homepage": {
+    "featureType": "custom",
+    "eventIndex": 0,
+    "musicIndex": 0,
+    "customLabel": "Annual Worship Experience",
+    "customTitle": "2026 Live Recording",
+    "customText": "A signature worship expression curated yearly with a unique prophetic theme.",
+    "customCtaText": "View Events",
+    "customCtaHref": "/events.html#upcoming",
+    "authorityStrip": "FEATURED AT: WEAL HOUSE | NAIROBI CHAPEL | WORSHIP NIGHTS | LIVE RECORDINGS",
+    "about": {
+      "eyebrow": "About Essy",
+      "title": "Worship Minister with a Sound for Revival",
+      "text": "Essy serves as a worship minister and music educator, creating spaces where people encounter Jesus deeply.",
+      "highlights": [
+        "Music Educator in International Schools",
+        "Worship Leadership for Gatherings & Conferences",
+        "Founder & Curator of an Annual Worship Experience"
+      ]
+    },
+    "annualExperience": {
+      "eyebrow": "Annual Worship Experience",
+      "title": "A New Theme Every Year",
+      "text": "Each edition carries a distinct prophetic theme and worship sound.",
+      "editionLabel": "Current Edition",
+      "editionValue": "2026 Live Recording"
+    },
+    "musicEducation": {
+      "eyebrow": "Music Education",
+      "title": "Forming Young Voices with Excellence",
+      "text": "Essy mentors young musicians in voice, ensemble leadership, and worship formation."
+    },
+    "media": {
+      "title": "Media",
+      "linkText": "Watch & Listen",
+      "linkHref": "/music.html",
+      "items": [
+        {
+          "src": "/assets/hero.jpg",
+          "alt": "Essy Singer live worship performance",
+          "href": "/music.html"
+        },
+        {
+          "src": "/assets/event-1.jpg",
+          "alt": "Live worship event moment",
+          "href": "/events.html#upcoming"
+        },
+        {
+          "src": "/assets/music-1.jpg",
+          "alt": "Essy Singer release artwork",
+          "href": "/music.html"
+        }
+      ]
+    },
+    "streamingTitle": "STREAM ON",
+    "booking": {
+      "title": "Invite Essy to Lead Your Worship Gathering",
+      "ctaText": "Inquire About Booking",
+      "ctaHref": "/contact.html"
+    }
+  },
+  "musicPage": {
+    "eyebrow": "Music",
+    "title": "Songs For Worship",
+    "subtitle": "A focused catalog of songs, moments, and melodies that carry hope.",
+    "tags": [
+      "Singles",
+      "Live Sessions",
+      "Worship Sound"
+    ]
+  },
+  "eventsPage": {
+    "eyebrow": "Events",
+    "title": "Worship Nights & Gatherings",
+    "subtitle": "Main payment method is M-Pesa Express. Card checkout is available as a secondary option.",
+    "tags": [
+      "Live Recording",
+      "Prayer & Worship",
+      "Open to All"
+    ]
+  },
+  "contactPage": {
+    "eyebrow": "Contact / Booking",
+    "title": "Let's host a worship encounter together.",
+    "subtitle": "Simple, quick, and clear. Send one message and we will respond with availability.",
+    "detailsTitle": "Contact Details",
+    "detailsSubtitle": "For churches, campuses, conferences, and worship nights.",
+    "quickTitle": "Quick Contact",
+    "quickSubtitle": "No long forms. Reach out directly and get a faster response.",
+    "heroWhatsappText": "Chat on WhatsApp",
+    "heroEmailText": "Send Email",
+    "emailCtaText": "Email Essy",
+    "whatsappCtaText": "WhatsApp Chat",
+    "eventsCtaText": "View Events",
+    "eventsCtaHref": "/events.html"
+  }
+}

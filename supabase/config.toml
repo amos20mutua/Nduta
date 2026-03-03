@@ -1,0 +1,40 @@
+project_id = "essy-singer"
+
+[functions.create-ticket]
+verify_jwt = false
+
+[functions.validate-ticket]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
+
+[functions.mpesa-stk-push]
+verify_jwt = false
+
+[functions.mpesa-callback]
+verify_jwt = false
+
+[functions.admin-tickets]
+verify_jwt = false
+
+[functions.admin-auth-check]
+verify_jwt = false
+
+[functions.admin-login]
+verify_jwt = false
+
+[functions.content-get]
+verify_jwt = false
+
+[functions.content-upsert]
+verify_jwt = false
+
+[functions.tickets-download]
+verify_jwt = false
+
+[functions.tickets-verify]
+verify_jwt = false
+
+[functions.ticket-availability]
+verify_jwt = false

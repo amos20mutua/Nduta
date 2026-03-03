@@ -1,0 +1,49 @@
+{
+  "hero": {
+    "headline": "ESSY SINGER",
+    "subheadline": "Worship Minister | Music Educator",
+    "description": "Creating sacred worship experiences that draw hearts back to Jesus.",
+    "humanNote": "Every gathering is prayer-led, Scripture-anchored, and deeply personal.",
+    "backgroundType": "image",
+    "backgroundImage": "/assets/hero.jpg",
+    "backgroundVideo": "",
+    "primaryCta": { "text": "Watch Live", "href": "/music.html" },
+    "secondaryCta": { "text": "Book Essy", "href": "/contact.html" }
+  },
+  "sections": [
+    { "id": "story", "enabled": true, "order": 0 }
+  ],
+  "story": {
+    "eyebrow": "About Essy",
+    "title": "Worship Minister with a Sound for Revival",
+    "intro": "This section is fully editable in admin. Use it for biography, event storytelling, announcements, or any message for your audience.",
+    "blocks": [
+      {
+        "type": "text",
+        "eyebrow": "Ministry",
+        "title": "A Worship Journey Rooted in Prayer",
+        "body": "Essy serves churches, conferences, and worship nights with a prayer-led and Scripture-centered approach.\n\nEvery gathering is designed to help people encounter Jesus with sincerity and depth.",
+        "ctaText": "Contact for Ministry",
+        "ctaHref": "/contact.html"
+      },
+      {
+        "type": "image",
+        "image": "/assets/event-1.jpg",
+        "imageAlt": "Essy Singer event poster",
+        "imageCaption": "Poster and highlights can be inserted between write-ups."
+      },
+      {
+        "type": "split",
+        "eyebrow": "Annual Event",
+        "title": "2026 Live Recording",
+        "body": "Each year features a fresh worship theme and sound. This block can be used as an event announcement with supporting details.\n\nAdd call-to-action links for tickets or registrations whenever needed.",
+        "image": "/assets/hero.jpg",
+        "imageAlt": "Essy Singer leading worship",
+        "imageCaption": "Live worship moment",
+        "imagePosition": "right",
+        "ctaText": "View Events",
+        "ctaHref": "/events.html"
+      }
+    ]
+  }
+}

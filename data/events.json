@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "title": "Tales & Tunes Live Recording",
+      "date": "2026-02-27",
+      "time": "6:00 PM - 8:00 PM",
+      "venue": "WEAL HOUSE, Upperhill, Nairobi",
+      "city": "Nairobi",
+      "description": "Theme: Obey. Go. Be Great. This is not just an event - it is a worship encounter.",
+      "poster": "/assets/event-1.jpg",
+      "status": "available",
+      "stripeCheckoutUrl": "https://buy.stripe.com/your_checkout_link_here",
+      "ticketTiers": [
+        { "name": "General", "priceKsh": 500 }
+      ]
+    }
+  ]
+}

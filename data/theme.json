@@ -1,0 +1,10 @@
+{
+  "accent": "#D4AF37",
+  "bg": "from-[#3A0D1E] via-[#1a0b11] to-black",
+  "heroOverlay": "from-black/70 via-black/55 to-black/75",
+  "card": "bg-black/35 border-amber-200/20",
+  "button": {
+    "primary": "bg-[#D4AF37] hover:bg-[#b69022] text-[#1b1300]",
+    "secondary": "bg-black/40 hover:bg-black/60 text-[#f8eecf] border border-amber-200/30"
+  }
+}

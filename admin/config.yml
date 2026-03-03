@@ -1,0 +1,324 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+publish_mode: editorial_workflow
+
+collections:
+  - name: "settings"
+    label: "Site Settings"
+    files:
+      - file: "content/settings.json"
+        label: "Global Settings"
+        name: "global_settings"
+        format: "json"
+        fields:
+          - { label: "Site Name", name: "siteName", widget: "string" }
+          - { label: "Logo Text", name: "logoText", widget: "string" }
+          - { label: "Tagline", name: "tagline", widget: "string" }
+          - { label: "Location", name: "location", widget: "string" }
+          - label: "Contact"
+            name: "contact"
+            widget: "object"
+            fields:
+              - { label: "Email", name: "email", widget: "string" }
+              - { label: "Phone", name: "phone", widget: "string" }
+          - label: "Navigation"
+            name: "nav"
+            widget: "object"
+            fields:
+              - label: "Nav Items"
+                name: "items"
+                widget: "list"
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: "Label", name: "label", widget: "string" }
+                  - { label: "Href", name: "href", widget: "string" }
+          - label: "Social Links"
+            name: "socialLinks"
+            widget: "object"
+            fields:
+              - { label: "YouTube", name: "youtube", widget: "string", required: false }
+              - { label: "Instagram", name: "instagram", widget: "string", required: false }
+              - { label: "TikTok", name: "tiktok", widget: "string", required: false }
+              - { label: "Facebook", name: "facebook", widget: "string", required: false }
+              - { label: "Spotify", name: "spotify", widget: "string", required: false }
+              - { label: "Apple Music", name: "appleMusic", widget: "string", required: false }
+          - label: "Streaming Links"
+            name: "streamingLinks"
+            widget: "object"
+            fields:
+              - { label: "Spotify", name: "spotify", widget: "string", required: false }
+              - { label: "Apple Music", name: "appleMusic", widget: "string", required: false }
+              - { label: "YouTube", name: "youtube", widget: "string", required: false }
+          - label: "Footer"
+            name: "footer"
+            widget: "object"
+            fields:
+              - { label: "Legal Text", name: "legalText", widget: "string" }
+              - label: "Footer Links"
+                name: "links"
+                widget: "list"
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: "Label", name: "label", widget: "string" }
+                  - { label: "Href", name: "href", widget: "string" }
+          - label: "M-Pesa"
+            name: "mpesa"
+            widget: "object"
+            fields:
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
+              - { label: "Paybill/Till", name: "paybillOrTill", widget: "string" }
+              - { label: "Account Reference", name: "accountReference", widget: "string" }
+              - { label: "Instructions", name: "instructions", widget: "text" }
+          - label: "API"
+            name: "api"
+            widget: "object"
+            fields:
+              - { label: "Functions Base URL", name: "functionsBaseUrl", widget: "string", required: false, hint: "Example: https://YOUR-PROJECT.functions.supabase.co" }
+              - { label: "Supabase Anon Key", name: "supabaseAnonKey", widget: "string", required: false, hint: "Public anon key used to call edge functions from the browser." }
+          - label: "Music Page"
+            name: "musicPage"
+            widget: "object"
+            fields:
+              - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Subtitle", name: "subtitle", widget: "text" }
+              - label: "Tags"
+                name: "tags"
+                widget: "list"
+                field: { label: "Tag", name: "item", widget: "string" }
+          - label: "Events Page"
+            name: "eventsPage"
+            widget: "object"
+            fields:
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
+              - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Subtitle", name: "subtitle", widget: "text" }
+              - label: "Tags"
+                name: "tags"
+                widget: "list"
+                field: { label: "Tag", name: "item", widget: "string" }
+          - label: "Contact Page"
+            name: "contactPage"
+            widget: "object"
+            fields:
+              - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+              - { label: "Hero Title", name: "title", widget: "string" }
+              - { label: "Hero Subtitle", name: "subtitle", widget: "text" }
+              - { label: "Details Title", name: "detailsTitle", widget: "string" }
+              - { label: "Details Subtitle", name: "detailsSubtitle", widget: "text" }
+              - { label: "Quick Contact Title", name: "quickTitle", widget: "string" }
+              - { label: "Quick Contact Subtitle", name: "quickSubtitle", widget: "text" }
+              - { label: "Hero WhatsApp Text", name: "heroWhatsappText", widget: "string" }
+              - { label: "Hero Email Text", name: "heroEmailText", widget: "string" }
+              - { label: "Email CTA Text", name: "emailCtaText", widget: "string" }
+              - { label: "WhatsApp CTA Text", name: "whatsappCtaText", widget: "string" }
+              - { label: "Events CTA Text", name: "eventsCtaText", widget: "string" }
+              - { label: "Events CTA Link", name: "eventsCtaHref", widget: "string" }
+
+  - name: "homepage"
+    label: "Homepage"
+    files:
+      - file: "content/homepage.json"
+        label: "Homepage Content"
+        name: "homepage_content"
+        format: "json"
+        fields:
+          - label: "Hero"
+            name: "hero"
+            widget: "object"
+            fields:
+              - { label: "Headline", name: "headline", widget: "string" }
+              - { label: "Subheadline", name: "subheadline", widget: "string" }
+              - { label: "Description", name: "description", widget: "text" }
+              - { label: "Human Note", name: "humanNote", widget: "string", required: false }
+              - label: "Background Type"
+                name: "backgroundType"
+                widget: "select"
+                options: ["image", "video"]
+              - { label: "Background Image", name: "backgroundImage", widget: "image", required: false }
+              - { label: "Background Video URL", name: "backgroundVideo", widget: "string", required: false }
+              - label: "Primary CTA"
+                name: "primaryCta"
+                widget: "object"
+                fields:
+                  - { label: "Text", name: "text", widget: "string" }
+                  - { label: "Href", name: "href", widget: "string" }
+              - label: "Secondary CTA"
+                name: "secondaryCta"
+                widget: "object"
+                fields:
+                  - { label: "Text", name: "text", widget: "string" }
+                  - { label: "Href", name: "href", widget: "string" }
+          - label: "Section Controls"
+            name: "sections"
+            widget: "list"
+            summary: "{{fields.id}}"
+            fields:
+              - label: "Section ID"
+                name: "id"
+                widget: "select"
+                options: ["story"]
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
+              - { label: "Order", name: "order", widget: "number", value_type: "int", default: 0 }
+          - label: "Main Story Section"
+            name: "story"
+            widget: "object"
+            fields:
+              - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Intro", name: "intro", widget: "text", required: false }
+              - label: "Content Blocks"
+                name: "blocks"
+                widget: "list"
+                summary: "{{fields.type}}: {{fields.title}}"
+                fields:
+                  - label: "Block Type"
+                    name: "type"
+                    widget: "select"
+                    options: ["text", "image", "split"]
+                  - { label: "Eyebrow", name: "eyebrow", widget: "string", required: false }
+                  - { label: "Title", name: "title", widget: "string", required: false }
+                  - { label: "Body", name: "body", widget: "text", required: false, hint: "Use blank lines to separate paragraphs." }
+                  - { label: "Image/Poster", name: "image", widget: "image", required: false }
+                  - { label: "Image Alt Text", name: "imageAlt", widget: "string", required: false }
+                  - { label: "Image Caption", name: "imageCaption", widget: "string", required: false }
+                  - label: "Image Position (split only)"
+                    name: "imagePosition"
+                    widget: "select"
+                    required: false
+                    options: ["left", "right"]
+                  - { label: "Button Text", name: "ctaText", widget: "string", required: false }
+                  - { label: "Button Link", name: "ctaHref", widget: "string", required: false }
+  - name: "theme"
+    label: "Theme"
+    files:
+      - file: "content/theme.json"
+        label: "Theme Styles"
+        name: "theme_styles"
+        format: "json"
+        fields:
+          - { label: "Accent", name: "accent", widget: "string" }
+          - { label: "Background Classes", name: "bg", widget: "string", required: false }
+          - { label: "Hero Overlay Classes", name: "heroOverlay", widget: "string" }
+          - { label: "Card Classes", name: "card", widget: "string", required: false }
+          - label: "Button"
+            name: "button"
+            widget: "object"
+            fields:
+              - { label: "Primary", name: "primary", widget: "string", required: false }
+              - { label: "Secondary", name: "secondary", widget: "string", required: false }
+
+  - name: "events"
+    label: "Events"
+    files:
+      - file: "content/events.json"
+        label: "Events List"
+        name: "events_list"
+        format: "json"
+        fields:
+          - label: "Events"
+            name: "items"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
+              - { label: "Event ID (unique)", name: "id", widget: "string" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Year Theme", name: "yearTheme", widget: "string", required: false }
+              - { label: "Description", name: "description", widget: "text" }
+              - { label: "Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
+              - { label: "Time", name: "time", widget: "string" }
+              - { label: "Venue", name: "venue", widget: "string" }
+              - label: "Ticketing Settings"
+                name: "ticketing"
+                widget: "object"
+                fields:
+                  - { label: "Capacity", name: "capacity", widget: "number", value_type: "int", required: false }
+                  - { label: "Max Per Purchase", name: "maxPerPurchase", widget: "number", value_type: "int", default: 1 }
+              - { label: "Banner Image", name: "bannerImage", widget: "image" }
+              - label: "Gallery Images"
+                name: "galleryImages"
+                widget: "list"
+                required: false
+                field: { label: "Image", name: "item", widget: "image" }
+              - label: "Gallery Videos"
+                name: "galleryVideos"
+                widget: "list"
+                required: false
+                field: { label: "Video URL", name: "item", widget: "string" }
+              - label: "Buttons"
+                name: "buttons"
+                widget: "object"
+                fields:
+                  - { label: "Enable Buy Ticket", name: "buyTicketEnabled", widget: "boolean", default: true }
+                  - { label: "Enable Add To Calendar", name: "addToCalendarEnabled", widget: "boolean", default: true }
+                  - { label: "Enable Share", name: "shareEnabled", widget: "boolean", default: true }
+              - { label: "Featured", name: "featured", widget: "boolean", default: false }
+              - label: "Status"
+                name: "status"
+                widget: "select"
+                options: ["available", "sold_out"]
+              - label: "Ticket Tiers"
+                name: "ticketTiers"
+                widget: "list"
+                required: false
+                fields:
+                  - { label: "Tier Name", name: "name", widget: "string" }
+                  - { label: "Price Ksh", name: "priceKsh", widget: "number", value_type: "int" }
+
+  - name: "music"
+    label: "Music"
+    files:
+      - file: "content/music.json"
+        label: "Releases"
+        name: "releases"
+        format: "json"
+        fields:
+          - label: "Releases"
+            name: "items"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Cover Image", name: "coverImage", widget: "image" }
+              - { label: "Release Date", name: "releaseDate", widget: "date", format: "YYYY-MM-DD" }
+              - label: "Links"
+                name: "links"
+                widget: "object"
+                fields:
+                  - { label: "Spotify", name: "spotify", widget: "string", required: false }
+                  - { label: "Apple Music", name: "appleMusic", widget: "string", required: false }
+                  - { label: "YouTube", name: "youtube", widget: "string", required: false }
+                  - { label: "Audiomack", name: "audiomack", widget: "string", required: false }
+              - { label: "Featured", name: "featured", widget: "boolean", default: false }
+              - { label: "Lyrics", name: "lyrics", widget: "text", required: false }
+
+  - name: "media"
+    label: "Media"
+    files:
+      - file: "content/media.json"
+        label: "Media Section"
+        name: "media_section"
+        format: "json"
+        fields:
+          - { label: "Section Title", name: "sectionTitle", widget: "string" }
+          - label: "Media Items"
+            name: "items"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - label: "Type"
+                name: "type"
+                widget: "select"
+                options: ["image", "video"]
+              - { label: "Thumbnail", name: "thumbnail", widget: "image" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Link", name: "link", widget: "string", required: false }
+              - { label: "Embed URL", name: "embed", widget: "string", required: false }
+

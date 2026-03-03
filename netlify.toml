@@ -1,0 +1,75 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/create-ticket"
+  to = "/.netlify/functions/create-ticket"
+  status = 200
+
+[[redirects]]
+  from = "/validate-ticket"
+  to = "/.netlify/functions/validate-ticket"
+  status = 200
+
+[[redirects]]
+  from = "/payment-webhook"
+  to = "/.netlify/functions/payment-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/mpesa-stk-push"
+  to = "/.netlify/functions/mpesa-stk-push"
+  status = 200
+
+[[redirects]]
+  from = "/mpesa-callback"
+  to = "/.netlify/functions/mpesa-callback"
+  status = 200
+
+[[redirects]]
+  from = "/scan"
+  to = "/scan.html"
+  status = 200
+
+[[redirects]]
+  from = "/tickets-dashboard"
+  to = "/tickets-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/tickets"
+  to = "/.netlify/functions/admin-tickets"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/index.html"
+  status = 200
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "same-origin"
+
+[[headers]]
+  for = "/scan.html"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=3600"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=300, stale-while-revalidate=600"

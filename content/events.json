@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "enabled": true,
+      "id": "tales-and-tunes-2026",
+      "title": "Tales & Tunes Live Recording",
+      "yearTheme": "Obey. Go. Be Great.",
+      "description": "A worship encounter of storytelling, prophetic songs, and surrendered worship.",
+      "date": "2026-03-27",
+      "time": "6:00 PM - 8:00 PM",
+      "venue": "WEAL HOUSE, Upperhill, Nairobi",
+      "ticketing": {
+        "capacity": 150,
+        "maxPerPurchase": 4
+      },
+      "bannerImage": "/assets/event-1.jpg",
+      "galleryImages": [
+        "/assets/event-1.jpg"
+      ],
+      "galleryVideos": [
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      ],
+      "featured": true,
+      "status": "available",
+      "buttons": {
+        "buyTicketEnabled": true,
+        "addToCalendarEnabled": true,
+        "shareEnabled": true
+      },
+      "ticketTiers": [
+        { "name": "General", "priceKsh": 500 }
+      ]
+    }
+  ]
+}
