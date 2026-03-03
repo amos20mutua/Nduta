@@ -186,13 +186,18 @@
       const heroType = String(hero.backgroundType || 'image').toLowerCase();
       if (heroImageEl) {
         heroImageEl.src = SiteApp.resolvePath(hero.backgroundImage || '/assets/hero.jpg');
-        heroImageEl.classList.toggle('hidden', heroType === 'video' && Boolean(hero.backgroundVideo));
+        heroImageEl.classList.remove('hidden');
       }
       if (heroVideoEl) {
         const videoUrl = SiteApp.safeExternalHref(hero.backgroundVideo) || SiteApp.resolvePath(hero.backgroundVideo || '');
         if (heroType === 'video' && videoUrl) {
           heroVideoEl.src = videoUrl;
-          heroVideoEl.classList.remove('hidden');
+          heroVideoEl.classList.add('hidden');
+          const showVideo = () => {
+            heroVideoEl.classList.remove('hidden');
+          };
+          heroVideoEl.addEventListener('canplay', showVideo, { once: true });
+          heroVideoEl.addEventListener('loadeddata', showVideo, { once: true });
         } else {
           heroVideoEl.classList.add('hidden');
           heroVideoEl.removeAttribute('src');
