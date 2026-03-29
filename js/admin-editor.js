@@ -19,6 +19,7 @@
   const settingsStorageKey = "essy_admin_editor_config_v2";
   const refsByPath = new Map();
   const payloadByPath = new Map();
+  const contentStateByPath = new Map();
 
   const esc = (value) =>
     String(value ?? "")
@@ -91,16 +92,80 @@
     return response.json();
   };
 
+  const setSectionSaveState = (path) => {
+    const refs = refsByPath.get(path);
+    if (!refs?.saveBtn) return;
+    const state = contentStateByPath.get(path);
+    const canSave = state?.canSave !== false;
+    refs.saveBtn.disabled = !canSave;
+    refs.saveBtn.classList.toggle("opacity-50", !canSave);
+    refs.saveBtn.classList.toggle("cursor-not-allowed", !canSave);
+    refs.saveBtn.title = canSave ? "Save this section" : "Reload from backend before saving";
+  };
+
   const loadContent = async (path) => {
     const url = functionUrl(`/content-get?path=${encodeURIComponent(path)}`);
     if (url) {
-      const response = await fetch(url, { cache: "no-store", headers: apiHeaders(false) });
-      if (response.ok) {
-        const data = await response.json();
-        return data.payload;
+      try {
+        const response = await fetch(url, { cache: "no-store", headers: apiHeaders(false) });
+        if (response.ok) {
+          const data = await response.json();
+          const source = String(data?.source || "db");
+          return {
+            payload: data.payload,
+            state: {
+              source,
+              canSave: true,
+              message: source === "db"
+                ? "Loaded from Supabase content database."
+                : "Loaded from deployed static content. Saving will store a database copy.",
+            },
+          };
+        }
+
+        let apiMessage = "";
+        try {
+          const data = await response.json();
+          apiMessage = String(data?.error || "").trim();
+        } catch {}
+
+        const payload = await loadLocalContent(path);
+        const missingSavedCopy = response.status === 404 && /content not found/i.test(apiMessage);
+        return {
+          payload,
+          state: missingSavedCopy
+            ? {
+                source: "local-seed",
+                canSave: true,
+                message: "Loaded bundled file because the backend does not have a saved copy yet. Saving will create one.",
+              }
+            : {
+                source: "local-fallback",
+                canSave: false,
+                message: `Loaded bundled file because backend content could not be reached${apiMessage ? ` (${apiMessage})` : ""}. Reload before saving to avoid overwriting newer content.`,
+              },
+        };
+      } catch (error) {
+        const payload = await loadLocalContent(path);
+        return {
+          payload,
+          state: {
+            source: "local-fallback",
+            canSave: false,
+            message: `Loaded bundled file because backend content could not be reached (${error?.message || "network error"}). Reload before saving to avoid overwriting newer content.`,
+          },
+        };
       }
     }
-    return loadLocalContent(path);
+    const payload = await loadLocalContent(path);
+    return {
+      payload,
+      state: {
+        source: "local-only",
+        canSave: true,
+        message: "Loaded bundled file. Configure Functions Base URL to load and save backend content.",
+      },
+    };
   };
 
   const saveContent = async (path, payload) => {
@@ -681,12 +746,16 @@
   const loadSection = async (path) => {
     setStatus(path, "Loading...");
     try {
-      const payload = await loadContent(path);
-      payloadByPath.set(path, payload);
+      const result = await loadContent(path);
+      payloadByPath.set(path, result.payload);
+      contentStateByPath.set(path, result.state);
       renderEasyForPath(path);
-      setStatus(path, "Loaded");
+      setSectionSaveState(path);
+      setStatus(path, result.state.message, result.state.canSave !== false);
       return true;
     } catch (error) {
+      contentStateByPath.delete(path);
+      setSectionSaveState(path);
       setStatus(path, error?.message || "Load failed", false);
       return false;
     }
@@ -695,6 +764,10 @@
   const saveSection = async (path) => {
     setStatus(path, "Saving...");
     try {
+      const state = contentStateByPath.get(path);
+      if (state?.canSave === false) {
+        throw new Error("This section was loaded from local fallback because backend content could not be reached. Reload until it loads from backend before saving.");
+      }
       const refs = refsByPath.get(path);
       if (refs?.raw?.value) {
         try {
@@ -706,7 +779,13 @@
       }
       const payload = payloadByPath.get(path);
       await saveContent(path, payload);
-      setStatus(path, "Saved");
+      contentStateByPath.set(path, {
+        source: "db",
+        canSave: true,
+        message: "Saved to Supabase content database.",
+      });
+      setSectionSaveState(path);
+      setStatus(path, "Saved to Supabase content database.");
       return true;
     } catch (error) {
       setStatus(path, error?.message || "Save failed", false);
@@ -725,7 +804,12 @@
           const parsed = JSON.parse(refs.raw.value);
           payloadByPath.set(item.path, parsed);
           renderEasyForPath(item.path);
-          setStatus(item.path, "Advanced JSON applied");
+          const state = contentStateByPath.get(item.path);
+          if (state?.canSave === false) {
+            setStatus(item.path, `${state.message} JSON edits are local only until backend reload succeeds.`, false);
+          } else {
+            setStatus(item.path, "Advanced JSON applied");
+          }
         } catch {
           setStatus(item.path, "Advanced JSON is invalid", false);
         }
@@ -736,11 +820,16 @@
   const loadAll = async () => {
     setFeedback("Loading all sections...");
     let failed = 0;
+    let blocked = 0;
     for (const item of contentItems) {
       const ok = await loadSection(item.path);
       if (!ok) failed += 1;
+      else if (contentStateByPath.get(item.path)?.canSave === false) blocked += 1;
     }
     if (failed) return setFeedback(`Loaded with ${failed} issue(s).`, false);
+    if (blocked) {
+      return setFeedback(`Loaded with warning: ${blocked} section(s) came from local fallback. Reload those sections from backend before saving.`, false);
+    }
     setFeedback("All sections loaded.");
   };
 

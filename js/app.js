@@ -9,6 +9,7 @@
     reduceMotion: false
   };
   const CONTENT_CACHE_TTL_MS = 5 * 60 * 1000;
+  const CONTENT_API_TIMEOUT_MS = 7000;
   const CONTENT_CACHE_PREFIX = 'essy_content_cache_v1:';
 
   const defaultNavLinks = [
@@ -88,14 +89,21 @@
 
   const cacheKeyForPath = (path) => `${CONTENT_CACHE_PREFIX}${path}`;
 
-  const readContentCache = (path) => {
+  const readContentCache = (path, { allowExpired = false } = {}) => {
     try {
       const raw = localStorage.getItem(cacheKeyForPath(path));
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       const ts = Number(parsed?.ts || 0);
-      if (!ts || Date.now() - ts > CONTENT_CACHE_TTL_MS) return null;
-      return parsed?.payload ?? null;
+      if (!ts) return null;
+      const fresh = Date.now() - ts <= CONTENT_CACHE_TTL_MS;
+      if (!fresh && !allowExpired) return null;
+      return {
+        payload: parsed?.payload ?? null,
+        fresh,
+        stale: !fresh,
+        ts
+      };
     } catch {
       return null;
     }
@@ -108,7 +116,7 @@
     } catch {}
   };
 
-  const fetchWithTimeout = async (url, options = {}, timeoutMs = 2200) => {
+  const fetchWithTimeout = async (url, options = {}, timeoutMs = CONTENT_API_TIMEOUT_MS) => {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
@@ -118,8 +126,10 @@
     }
   };
 
-  const fetchContentViaApi = async (path) => {
-    const api = getApiConfig();
+  const hasConfiguredContentApi = (api) => Boolean(String(api?.functionsBaseUrl || '').trim());
+
+  const fetchContentViaApi = async (path, apiOverride = getApiConfig()) => {
+    const api = apiOverride || {};
     const base = String(api?.functionsBaseUrl || '').trim().replace(/\/+$/, '');
     if (!base || !isContentPath(path)) return null;
     const headers = {};
@@ -129,7 +139,7 @@
       headers.Authorization = `Bearer ${anonKey}`;
     }
     const url = `${base}/content-get?path=${encodeURIComponent(path)}`;
-    const response = await fetchWithTimeout(url, { cache: 'default', headers }, 2200);
+    const response = await fetchWithTimeout(url, { cache: 'default', headers }, CONTENT_API_TIMEOUT_MS);
     if (!response.ok) return null;
     const data = await response.json();
     return data?.payload ?? null;
@@ -137,24 +147,29 @@
 
   const loadJson = async (path) => {
     try {
-      if (isContentPath(path) && state.settings?.api) {
-        const cached = readContentCache(path);
-        if (cached) {
-          fetchContentViaApi(path)
+      const isContent = isContentPath(path);
+      const api = getApiConfig();
+      const hasApi = isContent && hasConfiguredContentApi(api);
+
+      if (hasApi) {
+        const cached = readContentCache(path, { allowExpired: true });
+        if (cached?.fresh && cached.payload !== null) {
+          fetchContentViaApi(path, api)
             .then((fresh) => {
               if (fresh) writeContentCache(path, fresh);
             })
             .catch(() => {});
-          return cached;
+          return cached.payload;
         }
-        const apiPayload = await fetchContentViaApi(path);
+        const apiPayload = await fetchContentViaApi(path, api);
         if (apiPayload) {
           writeContentCache(path, apiPayload);
           return apiPayload;
         }
+        if (cached?.payload !== null) return cached.payload;
       }
       const localPayload = await fetchWithRetry(path, (res) => res.json());
-      if (isContentPath(path)) writeContentCache(path, localPayload);
+      if (isContent && !hasApi) writeContentCache(path, localPayload);
       return localPayload;
     } catch (error) {
       showServerHint();
@@ -515,17 +530,42 @@
 
   const loadSettings = async () => {
     if (state.settings) return state.settings;
+    const cacheEntry = readContentCache('/content/settings.json', { allowExpired: true });
     const localSettings = await fetchWithRetry('/content/settings.json', (res) => res.json());
-    state.settings = localSettings;
-    writeContentCache('/content/settings.json', localSettings);
+    const apiCandidate = cacheEntry?.payload?.api && hasConfiguredContentApi(cacheEntry.payload.api)
+      ? cacheEntry.payload.api
+      : localSettings?.api;
+
+    if (cacheEntry?.fresh && cacheEntry.payload && typeof cacheEntry.payload === 'object') {
+      state.settings = cacheEntry.payload;
+      fetchContentViaApi('/content/settings.json', apiCandidate)
+        .then((fresh) => {
+          if (fresh && typeof fresh === 'object') {
+            state.settings = fresh;
+            writeContentCache('/content/settings.json', fresh);
+          }
+        })
+        .catch(() => {});
+      return state.settings;
+    }
+
     try {
       if (!getCookie('essy_cache_warm')) setCookie('essy_cache_warm', '1', 7 * 24 * 60 * 60);
-      const remoteSettings = await fetchContentViaApi('/content/settings.json');
+      const remoteSettings = await fetchContentViaApi('/content/settings.json', apiCandidate);
       if (remoteSettings && typeof remoteSettings === 'object') {
         state.settings = remoteSettings;
         writeContentCache('/content/settings.json', remoteSettings);
+        return state.settings;
       }
     } catch {}
+
+    if (cacheEntry?.payload && typeof cacheEntry.payload === 'object') {
+      state.settings = cacheEntry.payload;
+      return state.settings;
+    }
+
+    state.settings = localSettings;
+    if (!hasConfiguredContentApi(localSettings?.api)) writeContentCache('/content/settings.json', localSettings);
     return state.settings;
   };
 
