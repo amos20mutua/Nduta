@@ -123,7 +123,7 @@
 [[headers]]
   for = "/js/*"
   [headers.values]
-    Cache-Control = "public, max-age=86400, stale-while-revalidate=3600"
+    Cache-Control = "public, max-age=300, stale-while-revalidate=600"
 
 [[headers]]
   for = "/*.html"
