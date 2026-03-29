@@ -5,7 +5,7 @@
   "location": "Nairobi, Kenya",
   "contact": {
     "email": "missgikaba@gmail.com",
-    "phone": "+254700000000"
+    "phone": ""
   },
   "nav": {
     "items": [
@@ -37,19 +37,41 @@
   },
   "mpesa": {
     "enabled": true,
-    "paybillOrTill": "000000",
+    "paybillOrTill": "",
     "accountReference": "ESSY TICKETS",
     "instructions": "Open M-Pesa Express, enter the event amount, confirm the prompt, then keep your SMS as proof."
   },
   "api": {
-    "functionsBaseUrl": "https://xxyiybdbqrhdaxhxuvmw.functions.supabase.co",
-    "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4eWl5YmRicXJoZGF4aHh1dm13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NDc0MzEsImV4cCI6MjA4ODAyMzQzMX0.K3F8USlUZlAUvZEWucC_jSiQcvL1ypT9ucNdOCwNDrQ"
+    "functionsBaseUrl": "",
+    "supabaseAnonKey": ""
+  },
+  "musicPage": {
+    "eyebrow": "Music",
+    "title": "Songs For Worship Moments",
+    "subtitle": "A growing home for songs, live worship moments, and releases that carry hope and reverence.",
+    "tags": []
   },
   "eventsPage": {
     "enabled": true,
     "eyebrow": "Events",
     "title": "Worship Nights and Gatherings",
-    "subtitle": "Buy tickets with M-Pesa for upcoming events.",
+    "subtitle": "See upcoming gatherings, ticket moments when available, and recent ministry events in one place.",
     "tags": []
+  },
+  "contactPage": {
+    "eyebrow": "Contact / Booking",
+    "title": "Book Essy for worship ministry.",
+    "subtitle": "Share your date, location, and vision for the gathering. A response will follow with availability.",
+    "detailsTitle": "Contact Details",
+    "detailsSubtitle": "For churches, fellowships, conferences, and worship nights.",
+    "quickTitle": "Booking Request",
+    "quickSubtitle": "Need a worship minister for your gathering? Share the details below and a response will follow.",
+    "heroWhatsappText": "Chat on WhatsApp",
+    "heroEmailText": "Send Email",
+    "emailCtaText": "Email Essy",
+    "whatsappCtaText": "WhatsApp Chat",
+    "eventsCtaText": "View Events",
+    "eventsCtaHref": "/events.html",
+    "formSubmitText": "Send Booking Request"
   }
 }

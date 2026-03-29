@@ -126,12 +126,19 @@
     }
   };
 
-  const hasConfiguredContentApi = (api) => Boolean(String(api?.functionsBaseUrl || '').trim());
+  const getFunctionsBaseUrl = (api) => {
+    const explicit = String(api?.functionsBaseUrl || '').trim().replace(/\/+$/, '');
+    if (explicit) return explicit;
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') return '';
+    return null;
+  };
+
+  const hasConfiguredContentApi = (api) => getFunctionsBaseUrl(api) !== null;
 
   const fetchContentViaApi = async (path, apiOverride = getApiConfig()) => {
     const api = apiOverride || {};
-    const base = String(api?.functionsBaseUrl || '').trim().replace(/\/+$/, '');
-    if (!base || !isContentPath(path)) return null;
+    const base = getFunctionsBaseUrl(api);
+    if (base === null || !isContentPath(path)) return null;
     const headers = {};
     const anonKey = String(api?.supabaseAnonKey || '').trim();
     if (anonKey) {

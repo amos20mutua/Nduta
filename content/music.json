@@ -1,17 +1,3 @@
 {
-  "items": [
-    {
-      "title": "Song Title 1",
-      "coverImage": "/assets/music-1.jpg",
-      "releaseDate": "2026-01-05",
-      "links": {
-        "spotify": "",
-        "appleMusic": "",
-        "youtube": "",
-        "audiomack": ""
-      },
-      "featured": true,
-      "lyrics": "Verse 1\nYour mercy meets me in the morning light\n\nChorus\nJesus, be lifted high in every heart tonight"
-    }
-  ]
+  "items": []
 }

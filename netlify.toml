@@ -17,6 +17,21 @@
   status = 200
 
 [[redirects]]
+  from = "/contact-submit"
+  to = "/.netlify/functions/contact-submit"
+  status = 200
+
+[[redirects]]
+  from = "/admin-login"
+  to = "/.netlify/functions/admin-login"
+  status = 200
+
+[[redirects]]
+  from = "/admin-auth-check"
+  to = "/.netlify/functions/admin-auth-check"
+  status = 200
+
+[[redirects]]
   from = "/mpesa-stk-push"
   to = "/.netlify/functions/mpesa-stk-push"
   status = 200
@@ -24,6 +39,31 @@
 [[redirects]]
   from = "/mpesa-callback"
   to = "/.netlify/functions/mpesa-callback"
+  status = 200
+
+[[redirects]]
+  from = "/content-get"
+  to = "/.netlify/functions/content-get"
+  status = 200
+
+[[redirects]]
+  from = "/content-upsert"
+  to = "/.netlify/functions/content-upsert"
+  status = 200
+
+[[redirects]]
+  from = "/ticket-availability"
+  to = "/.netlify/functions/ticket-availability"
+  status = 200
+
+[[redirects]]
+  from = "/tickets-download"
+  to = "/.netlify/functions/tickets-download"
+  status = 200
+
+[[redirects]]
+  from = "/tickets-verify"
+  to = "/.netlify/functions/tickets-verify"
   status = 200
 
 [[redirects]]
@@ -42,8 +82,18 @@
   status = 200
 
 [[redirects]]
+  from = "/admin-inquiries"
+  to = "/.netlify/functions/admin-inquiries"
+  status = 200
+
+[[redirects]]
   from = "/admin/*"
   to = "/admin/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/inquiries-dashboard"
+  to = "/inquiries-dashboard.html"
   status = 200
 
 [[headers]]
@@ -55,6 +105,12 @@
 
 [[headers]]
   for = "/scan.html"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/inquiries-dashboard.html"
   [headers.values]
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"

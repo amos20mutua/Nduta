@@ -1,5 +1,6 @@
-const { json } = require('./_lib/response');
+const { json, csv } = require('./_lib/response');
 const { getSupabaseAdmin } = require('./_lib/supabase');
+const { requireAdmin } = require('./_lib/admin-auth');
 
 function toCsv(rows) {
   const headers = ['id', 'event_id', 'holder_name', 'holder_email', 'payment_status', 'status', 'checked_in', 'issued_at', 'checked_in_at'];
@@ -16,16 +17,11 @@ function toCsv(rows) {
 }
 
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, body: 'ok' };
   if (event.httpMethod !== 'GET') return json(405, { error: 'Method not allowed' });
 
-  const adminKey = process.env.ADMIN_API_KEY;
-  if (!adminKey) {
-    return json(503, { error: 'Admin key is not configured on server' });
-  }
-  const token = event.headers['x-admin-key'];
-  if (!token || token !== adminKey) {
-    return json(401, { error: 'Unauthorized' });
-  }
+  const authResponse = requireAdmin(event);
+  if (authResponse) return authResponse;
 
   const eventId = event.queryStringParameters?.event_id;
   const format = event.queryStringParameters?.format;
@@ -47,16 +43,7 @@ exports.handler = async (event) => {
     .order('scanned_at', { ascending: false })
     .limit(500);
 
-  if (format === 'csv') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename="tickets.csv"'
-      },
-      body: toCsv(data || [])
-    };
-  }
+  if (format === 'csv') return csv(200, toCsv(data || []));
 
   return json(200, { tickets: data || [], scanLogs: logs || [] });
 };

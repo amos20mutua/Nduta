@@ -1,6 +1,8 @@
 const { json, parseJson } = require('./_lib/response');
 const { getSupabaseAdmin } = require('./_lib/supabase');
 const { issueTicket } = require('./_lib/ticket-service');
+const { deliverTicket } = require('./_lib/ticket-delivery');
+const { loadEvents } = require('./_lib/events');
 
 function metaValue(items, name) {
   const match = (Array.isArray(items) ? items : []).find((item) => item?.Name === name);
@@ -8,6 +10,7 @@ function metaValue(items, name) {
 }
 
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, body: 'ok' };
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
 
   const payload = parseJson(event);
@@ -50,6 +53,10 @@ exports.handler = async (event) => {
 
   const quantity = Math.max(1, Number(intent.quantity || 1));
   const issuedIds = [];
+  const deliveryWarnings = [];
+  const events = await loadEvents().catch(() => []);
+  const eventTitle = events.find((item) => String(item?.id || '') === String(intent.event_id || ''))?.title || intent.event_id;
+  const unitAmount = Math.max(0, Math.round(Number(intent.total_amount_ksh || 0) / quantity));
   for (let i = 0; i < quantity; i += 1) {
     const sequenceRef = quantity > 1 ? `${mpesaReceipt || checkoutRequestId}-${i + 1}` : (mpesaReceipt || checkoutRequestId);
     const ticket = await issueTicket({
@@ -61,6 +68,18 @@ exports.handler = async (event) => {
       source: 'mpesa-callback'
     });
     issuedIds.push(ticket.ticket.id);
+
+    const delivery = await deliverTicket(event, {
+      holderName: intent.holder_name,
+      holderEmail: intent.holder_email,
+      phoneNumber: intent.phone_number,
+      eventTitle,
+      ticketId: ticket.ticket.id,
+      ticketType: intent.tier_name || 'Paid Ticket',
+      amountLabel: unitAmount > 0 ? `KSh ${unitAmount}` : 'Paid'
+    });
+    if (delivery.email.warning) deliveryWarnings.push(delivery.email.warning);
+    if (delivery.whatsapp.warning) deliveryWarnings.push(delivery.whatsapp.warning);
   }
 
   const { error: successUpdateError } = await supabase
@@ -78,5 +97,5 @@ exports.handler = async (event) => {
     return json(500, { error: 'Tickets issued but failed to update intent state', detail: successUpdateError.message });
   }
 
-  return json(200, { ok: true, issued: true, ticketCount: issuedIds.length });
+  return json(200, { ok: true, issued: true, ticketCount: issuedIds.length, warnings: deliveryWarnings });
 };

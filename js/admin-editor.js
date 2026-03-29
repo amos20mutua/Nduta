@@ -70,8 +70,8 @@
 
   const functionUrl = (path) => {
     const { baseUrl } = getConfig();
-    if (!baseUrl) return "";
-    return `${baseUrl}/${String(path || "").replace(/^\/+/, "")}`;
+    const cleanPath = String(path || "").replace(/^\/+/, "");
+    return baseUrl ? `${baseUrl}/${cleanPath}` : `/${cleanPath}`;
   };
 
   const apiHeaders = (needsAdmin = false) => {
@@ -117,7 +117,7 @@
               source,
               canSave: true,
               message: source === "db"
-                ? "Loaded from Supabase content database."
+                ? "Loaded from site content database."
                 : "Loaded from deployed static content. Saving will store a database copy.",
             },
           };
@@ -163,14 +163,13 @@
       state: {
         source: "local-only",
         canSave: true,
-        message: "Loaded bundled file. Configure Functions Base URL to load and save backend content.",
+        message: "Loaded bundled file. Backend routes are unavailable from this environment.",
       },
     };
   };
 
   const saveContent = async (path, payload) => {
     const url = functionUrl("/content-upsert");
-    if (!url) throw new Error("Functions Base URL is required");
     const { adminSession, adminKey } = getConfig();
     if (!adminSession && !adminKey) throw new Error("Login required. Unlock admin access first.");
     const response = await fetch(url, {
@@ -179,7 +178,7 @@
       body: JSON.stringify({ path, payload }),
     });
     const data = await response.json().catch(() => ({}));
-    if (response.status === 401) throw new Error("Unauthorized. Unlock admin access again or verify ADMIN_API_KEY.");
+    if (response.status === 401) throw new Error("Unauthorized. Unlock admin access again or verify the optional fallback admin key.");
     if (!response.ok) throw new Error(data?.error || "Save failed");
   };
 
@@ -346,10 +345,10 @@
       </div>
       ${row("M-Pesa Instructions", textArea(path, "mpesa.instructions", p.mpesa.instructions || "", 3))}
 
-      <h3 class="mt-2 text-sm font-semibold uppercase tracking-wide text-amber-100">Website API (auto-filled)</h3>
+      <h3 class="mt-2 text-sm font-semibold uppercase tracking-wide text-amber-100">Website API (optional)</h3>
       <div class="grid gap-3 sm:grid-cols-2">
-        ${row("Functions Base URL", textInput(path, "api.functionsBaseUrl", p.api.functionsBaseUrl || ""))}
-        ${row("Supabase Anon Key", textInput(path, "api.supabaseAnonKey", p.api.supabaseAnonKey || ""))}
+        ${row("Functions Base URL", textInput(path, "api.functionsBaseUrl", p.api.functionsBaseUrl || "", "Leave blank on Netlify same-origin"))}
+        ${row("Public API Key", textInput(path, "api.supabaseAnonKey", p.api.supabaseAnonKey || "", "Leave blank unless you expose a public browser key"))}
       </div>
 
       <h3 class="mt-2 text-sm font-semibold uppercase tracking-wide text-amber-100">Events Page Control</h3>
@@ -375,8 +374,17 @@
         ${row("Contact Title", textInput(path, "contactPage.title", p.contactPage.title || ""))}
         ${row("Details Title", textInput(path, "contactPage.detailsTitle", p.contactPage.detailsTitle || ""))}
         ${row("Quick Title", textInput(path, "contactPage.quickTitle", p.contactPage.quickTitle || ""))}
+        ${row("Hero WhatsApp Text", textInput(path, "contactPage.heroWhatsappText", p.contactPage.heroWhatsappText || ""))}
+        ${row("Hero Email Text", textInput(path, "contactPage.heroEmailText", p.contactPage.heroEmailText || ""))}
+        ${row("Email CTA Text", textInput(path, "contactPage.emailCtaText", p.contactPage.emailCtaText || ""))}
+        ${row("WhatsApp CTA Text", textInput(path, "contactPage.whatsappCtaText", p.contactPage.whatsappCtaText || ""))}
+        ${row("Events CTA Text", textInput(path, "contactPage.eventsCtaText", p.contactPage.eventsCtaText || ""))}
+        ${row("Events CTA Link", textInput(path, "contactPage.eventsCtaHref", p.contactPage.eventsCtaHref || ""))}
+        ${row("Form Submit Text", textInput(path, "contactPage.formSubmitText", p.contactPage.formSubmitText || ""))}
       </div>
       ${row("Contact Subtitle", textArea(path, "contactPage.subtitle", p.contactPage.subtitle || "", 2))}
+      ${row("Details Subtitle", textArea(path, "contactPage.detailsSubtitle", p.contactPage.detailsSubtitle || "", 2))}
+      ${row("Quick Subtitle", textArea(path, "contactPage.quickSubtitle", p.contactPage.quickSubtitle || "", 2))}
     `;
   };
 
@@ -782,10 +790,10 @@
       contentStateByPath.set(path, {
         source: "db",
         canSave: true,
-        message: "Saved to Supabase content database.",
+        message: "Saved to site content database.",
       });
       setSectionSaveState(path);
-      setStatus(path, "Saved to Supabase content database.");
+      setStatus(path, "Saved to site content database.");
       return true;
     } catch (error) {
       setStatus(path, error?.message || "Save failed", false);

@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const { json, parseJson } = require('./_lib/response');
 const { issueTicket } = require('./_lib/ticket-service');
+const { deliverTicket } = require('./_lib/ticket-delivery');
+const { loadEvents } = require('./_lib/events');
 
 function verifyWebhookSignature(rawBody, signature, secret) {
   if (!secret) return true;
@@ -14,6 +16,7 @@ function verifyWebhookSignature(rawBody, signature, secret) {
 }
 
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, body: 'ok' };
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
 
   const secret = process.env.PAYMENT_WEBHOOK_SECRET || '';
@@ -44,12 +47,25 @@ exports.handler = async (event) => {
       source: 'payment-webhook'
     });
 
+    const events = await loadEvents().catch(() => []);
+    const eventTitle = events.find((item) => String(item?.id || '') === String(eventId || ''))?.title || eventId;
+    const delivery = await deliverTicket(event, {
+      holderName: attendee.name,
+      holderEmail: attendee.email,
+      phoneNumber: attendee.phone,
+      eventTitle,
+      ticketId: issued.ticket.id,
+      ticketType: 'Paid Ticket',
+      amountLabel: Number(payment?.amountKsh || 0) > 0 ? `KSh ${Number(payment.amountKsh)}` : 'Paid'
+    });
+
     return json(200, {
       ok: true,
       issued: true,
       ticketId: issued.ticket.id,
       qrToken: issued.token,
-      qrCodeDataUrl: issued.qrDataUrl
+      qrCodeDataUrl: issued.qrDataUrl,
+      delivery
     });
   } catch (error) {
     return json(500, { error: 'Failed to issue paid ticket', detail: error.message });

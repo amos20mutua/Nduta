@@ -1,11 +1,31 @@
-function json(statusCode, body) {
+const baseHeaders = {
+  'Cache-Control': 'no-store',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, content-type, x-admin-key, x-admin-session, x-payment-signature, x-webhook-signature',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+};
+
+function json(statusCode, body, extraHeaders = {}) {
   return {
     statusCode,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'no-store'
+      ...baseHeaders,
+      ...extraHeaders
     },
     body: JSON.stringify(body)
+  };
+}
+
+function csv(statusCode, body, filename = 'tickets.csv') {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      ...baseHeaders
+    },
+    body
   };
 }
 
@@ -17,4 +37,4 @@ function parseJson(event) {
   }
 }
 
-module.exports = { json, parseJson };
+module.exports = { json, csv, parseJson, baseHeaders };

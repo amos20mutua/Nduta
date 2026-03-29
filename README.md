@@ -1,109 +1,141 @@
-# Essy Singer - Supabase Database + Edge Functions
+# Essy Singer - Netlify Functions + Supabase Database
 
-This project is a static site (`HTML + Tailwind CDN + Vanilla JS`) with ticketing backed by Supabase.
+This project is a static site (`HTML + Tailwind CDN + Vanilla JS`) hosted on Netlify.
 
-The Netlify function layer has been replaced with Supabase Edge Functions.
+Supabase remains the database, but the server runtime now lives in Netlify Functions. That means:
 
-## 1) Supabase setup
+- Supabase secrets stay in Netlify environment variables
+- the browser talks to same-origin Netlify routes like `/content-get` and `/mpesa-stk-push`
+- no Supabase service key is stored in the repo
 
-1. Create a Supabase project.
-2. Run [`supabase/schema.sql`](./supabase/schema.sql) in the SQL editor.
-3. Deploy edge functions from this repo:
-   - `create-ticket`
-   - `validate-ticket`
-   - `payment-webhook`
-   - `mpesa-stk-push`
-   - `mpesa-callback`
-   - `admin-tickets`
-   - `content-get`
-   - `content-upsert`
-   - `tickets-download`
-   - `tickets-verify`
+## 1) Database setup
 
-`supabase/config.toml` is included with `verify_jwt = false` for browser/webhook access patterns used by this site.
+1. Create or open your Supabase project.
+2. If you want a full clean restart, run [supabase/reset.sql](./supabase/reset.sql) in the SQL editor.
+3. If you only want to create missing tables without dropping data, run [supabase/schema.sql](./supabase/schema.sql) instead.
+4. If you want the database to start with the current bundled site content, run [supabase/seed-content.sql](./supabase/seed-content.sql) after the reset/schema step.
 
-## 2) Environment variables (Supabase Edge Functions)
+The database tables used by the site are:
 
-Set these in Supabase project secrets:
+- `tickets`
+- `scan_logs`
+- `mpesa_intents`
+- `contact_inquiries`
+- `site_content`
 
-- `PROJECT_SUPABASE_URL` (recommended custom var) or built-in `SUPABASE_URL`
-- `PROJECT_SERVICE_ROLE_KEY` (recommended custom var) or built-in `SUPABASE_SERVICE_ROLE_KEY`
+## 2) Netlify environment variables
+
+Set these in Netlify Site Settings -> Environment Variables.
+
+You can use [.env.example](./.env.example) as the checklist of variables to add.
+
+Required database/runtime values:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 - `QR_JWT_SECRET`
-- `TICKET_DOWNLOAD_SECRET` (recommended, fallback is `QR_JWT_SECRET`)
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+- `ADMIN_SESSION_SECRET`
+
+Recommended app values:
+
+- `ADMIN_API_KEY`
+- `TICKET_DOWNLOAD_SECRET`
 - `PAYMENT_WEBHOOK_SECRET`
-- `VALIDATE_RATE_LIMIT_MAX` (example: `30`)
-- `VALIDATE_RATE_LIMIT_WINDOW_MS` (example: `60000`)
-- `ADMIN_API_KEY` (recommended for scanner/dashboard protection)
-- `CONTENT_BASE_URL` (public base URL where this site is hosted, used to load `/content/events.json`)
-- `MPESA_ENABLED` (`true`/`false`, default `true`)
+- `VALIDATE_RATE_LIMIT_MAX`
+- `VALIDATE_RATE_LIMIT_WINDOW_MS`
+- `SITE_BASE_URL`
+
+M-Pesa / Daraja:
+
+- `MPESA_ENABLED`
 - `MPESA_CONSUMER_KEY`
 - `MPESA_CONSUMER_SECRET`
 - `MPESA_SHORTCODE`
 - `MPESA_PASSKEY`
-- `MPESA_CALLBACK_URL` (must point to your deployed `mpesa-callback` function URL)
-- `MPESA_BASE_URL` (optional, default `https://sandbox.safaricom.co.ke`)
-- `DARAJA_CONSUMER_KEY`
-- `DARAJA_CONSUMER_SECRET`
-- `DARAJA_PASSKEY`
-- `DARAJA_SHORTCODE`
-- `DARAJA_CALLBACK_URL`
-- `DARAJA_BASE_URL` (optional)
-- `FUNCTIONS_BASE_URL` (optional; used to build ticket download links)
+- `MPESA_CALLBACK_URL`
+- `MPESA_BASE_URL`
+
+Optional delivery values:
+
 - `EMAIL_FROM`
-- `RESEND_API_KEY` (recommended email provider for Edge runtime)
-- `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` (accepted; if SMTP is used externally)
-- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` (optional WhatsApp delivery)
+- `RESEND_API_KEY`
+- `BOOKING_NOTIFY_EMAIL`
+- `EMAIL_HOST`
+- `EMAIL_PORT`
+- `EMAIL_USER`
+- `EMAIL_PASS`
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_WHATSAPP_FROM`
 
-## 3) Frontend API configuration
+## 3) Netlify functions used by the site
 
-Set these in `content/settings.json` (or via CMS settings):
+The frontend uses these same-origin routes:
 
-- `api.functionsBaseUrl`  
-  Example: `https://YOUR-PROJECT.functions.supabase.co`
-- `api.supabaseAnonKey`  
-  Your Supabase public anon key (used only for calling edge functions from browser).
+- `POST /admin-login`
+- `GET /admin-auth-check`
+- `GET /content-get?path=/content/*.json`
+- `POST /content-upsert`
+- `GET /ticket-availability`
+- `POST /mpesa-stk-push`
+- `POST /mpesa-callback`
+- `POST /payment-webhook`
+- `POST /contact-submit`
+- `POST /validate-ticket`
+- `GET /admin-tickets`
+- `GET /admin-inquiries`
+- `GET /tickets-download?token=...`
+- `GET /tickets-verify?ticketId=...`
 
-Client pages now call:
+These routes are mapped in [netlify.toml](./netlify.toml) to files in [netlify/functions](./netlify/functions).
 
-- `POST {functionsBaseUrl}/mpesa-stk-push`
-- `POST {functionsBaseUrl}/validate-ticket`
-- `GET {functionsBaseUrl}/admin-tickets`
-- `GET {functionsBaseUrl}/content-get?path=/content/*.json`
-- `POST {functionsBaseUrl}/content-upsert`
-- `GET {functionsBaseUrl}/tickets-download?token=...`
-- `GET {functionsBaseUrl}/tickets-verify?ticketId=...`
+## 4) Frontend configuration
 
-## 4) Scanner and dashboard access
+[content/settings.json](./content/settings.json) intentionally keeps the API section blank by default:
 
-- [`scan.html`](./scan.html) now uses an admin key field instead of Netlify Identity.
-- [`tickets-dashboard.html`](./tickets-dashboard.html) uses admin key + optional event filter and CSV export.
-- [`admin/editor.html`](./admin/editor.html) is an Easy Form Mode full-site editor for non-technical users (with optional Advanced JSON per section).
-- If `ADMIN_API_KEY` is set in Supabase secrets, scanner/dashboard require that key.
+- `api.functionsBaseUrl`
+- `api.supabaseAnonKey`
 
-## 5) Notes
+On Netlify, the site uses same-origin routes automatically, so you do not need to commit a function base URL or public key into GitHub.
 
-- `netlify/functions/*` is kept in the repo only as legacy reference.
-- Decap CMS files under `admin/` are unchanged by this migration.
-- Events visibility controls:
-  - Global toggle: `content/settings.json -> eventsPage.enabled`
-  - Per-event toggle: `content/events.json -> items[].enabled`
-  - If disabled or no upcoming enabled events, `events.html` shows “No Upcoming Events”.
+## 5) Admin/content workflow
 
-## 6) Connection checklist (frontend + backend)
+- Open `/admin/editor.html`
+- Click `Load All`
+- Edit content
+- Click `Save` or `Save All`
 
-1. Run `supabase/schema.sql` (includes ticket tables + `site_content`).
-2. Deploy all edge functions listed above.
-3. Set Supabase secrets/env vars from this README.
-4. Set `content/settings.json -> api.functionsBaseUrl` and `api.supabaseAnonKey`.
-5. Open `/admin/editor.html`, click `Load All`, then `Save All` once to confirm DB content write works.
+Content is read from `site_content` in Supabase when available, with bundled `content/*.json` files as static fallback.
 
-## 7) Ticket delivery
+If you ran `reset.sql` and want the editor/site to immediately use database-backed content again, run `seed-content.sql` first.
 
-- After successful paid ticket issuance, the backend now:
-  - creates a signed 48-hour ticket download token
-  - sends ticket email (when email provider is configured)
-  - sends WhatsApp download link (when Twilio WhatsApp is configured)
-- Download endpoint returns a generated PDF ticket:
-  - `GET /tickets-download?token=...`
-- Verification endpoint:
-  - `GET /tickets-verify?ticketId=...`
+## 6) Ticket flow
+
+- Event availability is read from Supabase ticket counts
+- M-Pesa checkout is initiated by Netlify Functions
+- successful payments create tickets in Supabase
+- ticket download links are signed
+- QR verification and check-in happen through Netlify Functions
+
+## 7) Contact flow
+
+- Website booking requests are submitted through `/contact-submit`
+- requests are stored in `contact_inquiries`
+- admin can review them from `/inquiries-dashboard.html`
+- optional notification emails can be sent with `RESEND_API_KEY`, `EMAIL_FROM`, and `BOOKING_NOTIFY_EMAIL`
+
+## 8) Important note
+
+Do not commit secrets to GitHub.
+
+Only put sensitive values in Netlify environment variables. The repo should contain code and non-secret content only.
+
+## 9) Recommended restart order
+
+1. Run [supabase/reset.sql](./supabase/reset.sql) in Supabase if you want a full wipe.
+2. Run [supabase/seed-content.sql](./supabase/seed-content.sql) if you want to restore the current default site content into `site_content`.
+3. Add the required variables from [.env.example](./.env.example) to Netlify.
+4. Redeploy the site on Netlify.
+5. Open `/admin/editor.html`, log in, click `Load All`, and confirm sections load from the site content database.

@@ -1,7 +1,6 @@
-const fs = require('fs/promises');
-const path = require('path');
 const { json, parseJson } = require('./_lib/response');
 const { getSupabaseAdmin } = require('./_lib/supabase');
+const { loadEvents } = require('./_lib/events');
 
 const KENYA_PHONE = /^2547\d{8}$/;
 
@@ -26,13 +25,6 @@ function timestampNow() {
   return parts.join('');
 }
 
-async function loadEvents() {
-  const file = path.resolve(process.cwd(), 'content/events.json');
-  const raw = await fs.readFile(file, 'utf8');
-  const payload = JSON.parse(raw);
-  return Array.isArray(payload?.items) ? payload.items : [];
-}
-
 async function getDarajaToken(baseUrl, consumerKey, consumerSecret) {
   const credentials = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
   const response = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
@@ -46,6 +38,7 @@ async function getDarajaToken(baseUrl, consumerKey, consumerSecret) {
 }
 
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, body: 'ok' };
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
 
   const body = parseJson(event);

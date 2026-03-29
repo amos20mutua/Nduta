@@ -56,8 +56,50 @@
 
       <article class="reveal section-shell p-7">
         <h2 id="contact-quick-title" class="font-display text-3xl text-white">Booking Request</h2>
-        <p id="contact-quick-subtitle" class="mt-2 text-sm text-amber-50/80">Need a worship minister for your gathering? Reach out through any channel below.</p>
-        <div class="mt-6 flex flex-col gap-3">
+        <p id="contact-quick-subtitle" class="mt-2 text-sm text-amber-50/80">Need a worship minister for your gathering? Share the details below and a response will follow.</p>
+
+        <form id="booking-request-form" class="mt-6 space-y-4">
+          <input type="text" name="company" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="block">
+              <span class="text-xs uppercase tracking-[0.12em] text-amber-200">Full Name</span>
+              <input type="text" name="name" class="mt-2 w-full rounded-xl border border-amber-200/20 bg-black/20 px-4 py-3 text-sm text-amber-50 outline-none placeholder:text-amber-100/35" placeholder="Your name" required />
+            </label>
+            <label class="block">
+              <span class="text-xs uppercase tracking-[0.12em] text-amber-200">Email</span>
+              <input type="email" name="email" class="mt-2 w-full rounded-xl border border-amber-200/20 bg-black/20 px-4 py-3 text-sm text-amber-50 outline-none placeholder:text-amber-100/35" placeholder="you@example.com" required />
+            </label>
+            <label class="block">
+              <span class="text-xs uppercase tracking-[0.12em] text-amber-200">Phone / WhatsApp</span>
+              <input type="tel" name="phone" class="mt-2 w-full rounded-xl border border-amber-200/20 bg-black/20 px-4 py-3 text-sm text-amber-50 outline-none placeholder:text-amber-100/35" placeholder="+254..." />
+            </label>
+            <label class="block">
+              <span class="text-xs uppercase tracking-[0.12em] text-amber-200">Church / Organization</span>
+              <input type="text" name="organization" class="mt-2 w-full rounded-xl border border-amber-200/20 bg-black/20 px-4 py-3 text-sm text-amber-50 outline-none placeholder:text-amber-100/35" placeholder="Church, fellowship, conference..." />
+            </label>
+            <label class="block">
+              <span class="text-xs uppercase tracking-[0.12em] text-amber-200">Event Date</span>
+              <input type="date" name="eventDate" class="mt-2 w-full rounded-xl border border-amber-200/20 bg-black/20 px-4 py-3 text-sm text-amber-50 outline-none" />
+            </label>
+            <label class="block">
+              <span class="text-xs uppercase tracking-[0.12em] text-amber-200">Location</span>
+              <input type="text" name="location" class="mt-2 w-full rounded-xl border border-amber-200/20 bg-black/20 px-4 py-3 text-sm text-amber-50 outline-none placeholder:text-amber-100/35" placeholder="City, venue, county..." />
+            </label>
+          </div>
+
+          <label class="block">
+            <span class="text-xs uppercase tracking-[0.12em] text-amber-200">What kind of gathering is this?</span>
+            <textarea name="message" rows="5" class="mt-2 w-full rounded-2xl border border-amber-200/20 bg-black/20 px-4 py-3 text-sm leading-7 text-amber-50 outline-none placeholder:text-amber-100/35" placeholder="Tell us about your event, expected audience, and what kind of ministry support you need." required></textarea>
+          </label>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="contact-submit" type="submit" class="btn-primary inline-flex rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide">Send Booking Request</button>
+            <p class="text-xs text-amber-100/70">Prefer direct contact? Use the email and WhatsApp buttons below.</p>
+          </div>
+          <p id="contact-form-feedback" class="hidden text-sm"></p>
+        </form>
+
+        <div class="mt-7 flex flex-col gap-3 border-t border-amber-200/15 pt-6">
           <a id="contact-email-cta" href="#" class="btn-primary inline-flex w-fit rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide">Email Essy</a>
           <a id="contact-whatsapp-cta" href="#" class="btn-secondary inline-flex w-fit rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide" target="_blank" rel="noopener noreferrer">WhatsApp Chat</a>
           <a id="contact-events-cta" href="./events.html" class="btn-secondary inline-flex w-fit rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide">View Events</a>

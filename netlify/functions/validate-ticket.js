@@ -3,9 +3,14 @@ const { json, parseJson } = require('./_lib/response');
 const { getSupabaseAdmin } = require('./_lib/supabase');
 const { verifySignedTicket } = require('./_lib/ticket-token');
 const { rateLimit } = require('./_lib/rate-limit');
+const { requireAdmin } = require('./_lib/admin-auth');
 
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, body: 'ok' };
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
+
+  const authResponse = requireAdmin(event);
+  if (authResponse) return authResponse;
 
   const ip = event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'] || 'unknown';
   const limit = Number(process.env.VALIDATE_RATE_LIMIT_MAX || 30);

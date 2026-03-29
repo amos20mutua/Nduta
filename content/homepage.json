@@ -16,7 +16,7 @@
   "story": {
     "eyebrow": "About Essy",
     "title": "Worship Minister with a Sound for Revival",
-    "intro": "This section is fully editable in admin. Use it for biography, event storytelling, announcements, or any message for your audience.",
+    "intro": "Essy Singer serves with a worship expression shaped by prayer, Scripture, and reverence, creating room for people to respond to Jesus with sincerity, freedom, and hope.",
     "blocks": [
       {
         "type": "text",
@@ -30,13 +30,13 @@
         "type": "image",
         "image": "/assets/event-1.jpg",
         "imageAlt": "Essy Singer event poster",
-        "imageCaption": "Poster and highlights can be inserted between write-ups."
+        "imageCaption": "Moments from worship gatherings and ministry events."
       },
       {
         "type": "split",
-        "eyebrow": "Annual Event",
-        "title": "2026 Live Recording",
-        "body": "Each year features a fresh worship theme and sound. This block can be used as an event announcement with supporting details.\n\nAdd call-to-action links for tickets or registrations whenever needed.",
+        "eyebrow": "Gatherings",
+        "title": "Spaces Marked by Reverence and Joy",
+        "body": "From worship nights to conferences, each gathering is prepared with prayer, musical excellence, and a heart for authentic ministry.\n\nThe goal is simple: create space where people can encounter God deeply and respond wholeheartedly.",
         "image": "/assets/hero.jpg",
         "imageAlt": "Essy Singer leading worship",
         "imageCaption": "Live worship moment",

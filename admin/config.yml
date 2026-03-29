@@ -78,8 +78,8 @@ collections:
             name: "api"
             widget: "object"
             fields:
-              - { label: "Functions Base URL", name: "functionsBaseUrl", widget: "string", required: false, hint: "Example: https://YOUR-PROJECT.functions.supabase.co" }
-              - { label: "Supabase Anon Key", name: "supabaseAnonKey", widget: "string", required: false, hint: "Public anon key used to call edge functions from the browser." }
+              - { label: "Functions Base URL", name: "functionsBaseUrl", widget: "string", required: false, hint: "Optional. Leave blank on Netlify same-origin." }
+              - { label: "Public API Key", name: "supabaseAnonKey", widget: "string", required: false, hint: "Optional public browser key. Leave blank when Netlify routes handle requests." }
           - label: "Music Page"
             name: "musicPage"
             widget: "object"
@@ -120,6 +120,7 @@ collections:
               - { label: "WhatsApp CTA Text", name: "whatsappCtaText", widget: "string" }
               - { label: "Events CTA Text", name: "eventsCtaText", widget: "string" }
               - { label: "Events CTA Link", name: "eventsCtaHref", widget: "string" }
+              - { label: "Form Submit Text", name: "formSubmitText", widget: "string", required: false }
 
   - name: "homepage"
     label: "Homepage"

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-admin-locked="true">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Booking Requests | Essy Singer</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+  <link rel="shortcut icon" href="./assets/favicon.svg?v=2" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="./js/admin-gate.js" defer></script>
+  <link rel="stylesheet" href="./css/custom.css" />
+  <style>
+    html[data-admin-locked="true"] main { visibility: hidden; }
+  </style>
+</head>
+<body class="page-ready">
+  <main class="mx-auto max-w-6xl px-4 py-10">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="font-display text-4xl text-white">Booking Requests</h1>
+        <p class="mt-2 text-sm text-amber-50/80">View and manage inquiries submitted from the website contact form.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <select id="inquiry-status-filter" class="rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white">
+          <option value="">All statuses</option>
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="closed">Closed</option>
+        </select>
+        <input id="admin-key" class="rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="legacy admin key (optional fallback)" />
+        <button id="load-inquiries" class="btn-primary rounded-full px-4 py-2 text-sm">Load</button>
+      </div>
+    </div>
+
+    <p id="inquiries-feedback" class="mt-4 text-sm text-amber-100/80"></p>
+    <section id="inquiries-list" class="mt-6 grid gap-5"></section>
+  </main>
+  <script src="./js/inquiries-dashboard.js" defer></script>
+</body>
+</html>

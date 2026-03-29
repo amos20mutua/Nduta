@@ -13,6 +13,12 @@
   const storyTitleEl = document.getElementById('story-title');
   const storyIntroEl = document.getElementById('story-intro');
   const storyBlocksEl = document.getElementById('story-blocks');
+  const mediaSectionEl = document.getElementById('home-media-section');
+  const mediaEyebrowEl = document.getElementById('home-media-eyebrow');
+  const mediaTitleEl = document.getElementById('home-media-title');
+  const mediaSubtitleEl = document.getElementById('home-media-subtitle');
+  const mediaCtaEl = document.getElementById('home-media-cta');
+  const mediaListEl = document.getElementById('home-media-list');
 
   const reduceMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -120,6 +126,53 @@
     storyBlocksEl.querySelectorAll('.reveal').forEach((node) => node.classList.add('in'));
   };
 
+  const mediaHref = (item) => {
+    const external = SiteApp.safeExternalHref(item?.link || item?.embed);
+    if (external) return { href: external, external: true };
+    return { href: SiteApp.resolvePath(item?.link || '/music.html'), external: false };
+  };
+
+  const renderMediaItems = (payload) => {
+    if (!mediaSectionEl || !mediaListEl) return;
+    const items = SiteApp.listFromPayload(payload).slice(0, 6);
+    if (!items.length) {
+      mediaSectionEl.classList.add('hidden');
+      mediaListEl.innerHTML = '';
+      return;
+    }
+
+    mediaSectionEl.classList.remove('hidden');
+    if (mediaEyebrowEl) mediaEyebrowEl.textContent = 'Media';
+    if (mediaTitleEl) mediaTitleEl.textContent = payload?.sectionTitle || 'Moments in Worship';
+    if (mediaSubtitleEl) mediaSubtitleEl.textContent = 'A small glimpse into gatherings, ministry moments, and worship stories.';
+    if (mediaCtaEl) mediaCtaEl.href = SiteApp.resolvePath('/music.html');
+
+    mediaListEl.innerHTML = items.map((item) => {
+      const target = mediaHref(item);
+      const attrs = target.external ? ' target="_blank" rel="noopener noreferrer"' : '';
+      const type = String(item?.type || 'image').toLowerCase();
+      const title = SiteApp.escapeHtml(String(item?.title || 'Media moment'));
+      const thumb = SiteApp.escapeHtml(SiteApp.resolvePath(item?.thumbnail || '/assets/hero.jpg'));
+      const badge = type === 'video' ? 'Video' : 'Photo';
+
+      return `
+        <a href="${SiteApp.escapeHtml(target.href)}"${attrs} class="group reveal overflow-hidden rounded-[1.6rem] border border-amber-200/20 bg-black/20">
+          <div class="relative">
+            <img src="${thumb}" alt="${title}" class="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+            <span class="absolute left-4 top-4 rounded-full border border-amber-200/30 bg-black/45 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">${SiteApp.escapeHtml(badge)}</span>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display text-2xl text-white">${title}</h3>
+            <p class="mt-2 text-xs uppercase tracking-[0.14em] text-amber-200/80">${type === 'video' ? 'Watch the moment' : 'Open gallery moment'}</p>
+          </div>
+        </a>
+      `;
+    }).join('');
+
+    mediaListEl.querySelectorAll('.reveal').forEach((node) => node.classList.add('in'));
+  };
+
   const initHumanTilt = () => {
     if (reduceMotion) return;
     document.querySelectorAll('.section-humane').forEach((card) => {
@@ -179,6 +232,7 @@
         SiteApp.loadTheme(),
         SiteApp.loadJson('/content/homepage.json').catch(() => ({}))
       ]);
+      const media = await SiteApp.loadJson('/content/media.json').catch(() => ({}));
 
       const hero = homepage.hero || {};
       const primaryEnabled = hero?.primaryCta?.enabled !== false;
@@ -241,6 +295,7 @@
       if (storyTitleEl) storyTitleEl.textContent = story.title || '';
       if (storyIntroEl) storyIntroEl.textContent = story.intro || '';
       renderStoryBlocks(story.blocks);
+      renderMediaItems(media);
 
       applySectionConfig(homepage.sections);
       initParallax();

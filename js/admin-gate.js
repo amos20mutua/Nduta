@@ -11,6 +11,12 @@
     return res.json();
   };
 
+  const buildFunctionUrl = (baseUrl, path) => {
+    const cleanPath = String(path || "").replace(/^\/+/, "");
+    const base = String(baseUrl || "").trim().replace(/\/+$/, "");
+    return base ? `${base}/${cleanPath}` : `/${cleanPath}`;
+  };
+
   const buildHeaders = (anonKey, token) => {
     const headers = {};
     if (anonKey) {
@@ -22,15 +28,15 @@
   };
 
   const validateSession = async (baseUrl, anonKey, token) => {
-    if (!baseUrl || !token) return false;
-    const url = `${baseUrl.replace(/\/+$/, "")}/admin-auth-check`;
+    if (!token) return false;
+    const url = buildFunctionUrl(baseUrl, "/admin-auth-check");
     const res = await fetch(url, { headers: buildHeaders(anonKey, token) });
     return res.ok;
   };
 
   const login = async (baseUrl, anonKey, username, password) => {
-    if (!baseUrl || !username || !password) return null;
-    const url = `${baseUrl.replace(/\/+$/, "")}/admin-login`;
+    if (!username || !password) return null;
+    const url = buildFunctionUrl(baseUrl, "/admin-login");
     const headers = {};
     if (anonKey) {
       headers.apikey = anonKey;
@@ -42,10 +48,18 @@
       headers,
       body: JSON.stringify({ username, password }),
     });
-    if (!res.ok) return null;
     const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return {
+        token: null,
+        error: String(data?.error || "Login failed").trim() || "Login failed",
+      };
+    }
     const token = String(data?.token || "").trim();
-    return token || null;
+    return {
+      token: token || null,
+      error: token ? "" : "Login failed",
+    };
   };
 
   const unlockDocument = () => {
@@ -89,18 +103,14 @@
         msg.textContent = "Enter username and password.";
         return;
       }
-      if (!api?.baseUrl) {
-        msg.textContent = "Server settings are missing.";
+      const result = await login(api.baseUrl, api.anonKey, username, password);
+      if (!result?.token) {
+        msg.textContent = result?.error || "Invalid username or password.";
         return;
       }
-      const token = await login(api.baseUrl, api.anonKey, username, password);
-      if (!token) {
-        msg.textContent = "Invalid username or password.";
-        return;
-      }
-      sessionStorage.setItem(SESSION_TOKEN_KEY, token);
+      sessionStorage.setItem(SESSION_TOKEN_KEY, result.token);
       sessionStorage.setItem(SESSION_USER_KEY, username);
-      publishReadySession(token);
+      publishReadySession(result.token);
       unlockDocument();
       wrap.remove();
     };
