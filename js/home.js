@@ -13,20 +13,8 @@
   const storyTitleEl = document.getElementById('story-title');
   const storyIntroEl = document.getElementById('story-intro');
   const storyBlocksEl = document.getElementById('story-blocks');
-  const mediaSectionEl = document.getElementById('home-media-section');
-  const mediaEyebrowEl = document.getElementById('home-media-eyebrow');
-  const mediaTitleEl = document.getElementById('home-media-title');
-  const mediaSubtitleEl = document.getElementById('home-media-subtitle');
-  const mediaCtaEl = document.getElementById('home-media-cta');
-  const mediaListEl = document.getElementById('home-media-list');
 
   const reduceMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const starterImagePaths = new Set([
-    '/assets/hero.jpg',
-    '/assets/event-1.jpg',
-    '/assets/gallery-1.jpg',
-    '/assets/music-1.jpg'
-  ]);
 
   const applySectionConfig = (sections) => {
     const defaults = [{ id: 'story', enabled: true, order: 0 }];
@@ -68,14 +56,7 @@
     return SiteApp.resolvePath(href || '/contact.html');
   };
 
-  const resolveDisplayImage = (src, fallback) => {
-    const raw = String(src || '').trim();
-    if (raw && !starterImagePaths.has(raw)) return SiteApp.resolvePath(raw);
-    if (fallback) return fallback;
-    return SiteApp.placeholderImageDataUrl();
-  };
-
-  const renderStoryBlocks = (items, heroImageFallback) => {
+  const renderStoryBlocks = (items) => {
     if (!storyBlocksEl) return;
     const list = Array.isArray(items) ? items : [];
     if (!list.length) {
@@ -89,7 +70,7 @@
         const title = SiteApp.escapeHtml(String(block?.title || ''));
         const eyebrow = SiteApp.escapeHtml(String(block?.eyebrow || ''));
         const body = textToParagraphs(block?.body);
-        const image = resolveDisplayImage(block?.image, heroImageFallback);
+        const image = SiteApp.resolvePath(block?.image || '/assets/hero.jpg');
         const imageAlt = SiteApp.escapeHtml(String(block?.imageAlt || block?.title || 'Essy Singer photo'));
         const caption = SiteApp.escapeHtml(String(block?.imageCaption || ''));
         const ctaText = SiteApp.escapeHtml(String(block?.ctaText || ''));
@@ -137,53 +118,6 @@
       .join('');
 
     storyBlocksEl.querySelectorAll('.reveal').forEach((node) => node.classList.add('in'));
-  };
-
-  const mediaHref = (item) => {
-    const external = SiteApp.safeExternalHref(item?.link || item?.embed);
-    if (external) return { href: external, external: true };
-    return { href: SiteApp.resolvePath(item?.link || '/music.html'), external: false };
-  };
-
-  const renderMediaItems = (payload, heroImageFallback) => {
-    if (!mediaSectionEl || !mediaListEl) return;
-    const items = SiteApp.listFromPayload(payload).slice(0, 6);
-    if (!items.length) {
-      mediaSectionEl.classList.add('hidden');
-      mediaListEl.innerHTML = '';
-      return;
-    }
-
-    mediaSectionEl.classList.remove('hidden');
-    if (mediaEyebrowEl) mediaEyebrowEl.textContent = 'Media';
-    if (mediaTitleEl) mediaTitleEl.textContent = payload?.sectionTitle || 'Moments in Worship';
-    if (mediaSubtitleEl) mediaSubtitleEl.textContent = 'A small glimpse into gatherings, ministry moments, and worship stories.';
-    if (mediaCtaEl) mediaCtaEl.href = SiteApp.resolvePath('/music.html');
-
-    mediaListEl.innerHTML = items.map((item) => {
-      const target = mediaHref(item);
-      const attrs = target.external ? ' target="_blank" rel="noopener noreferrer"' : '';
-      const type = String(item?.type || 'image').toLowerCase();
-      const title = SiteApp.escapeHtml(String(item?.title || 'Media moment'));
-      const thumb = SiteApp.escapeHtml(resolveDisplayImage(item?.thumbnail, heroImageFallback));
-      const badge = type === 'video' ? 'Video' : 'Photo';
-
-      return `
-        <a href="${SiteApp.escapeHtml(target.href)}"${attrs} class="group reveal overflow-hidden rounded-[1.6rem] border border-amber-200/20 bg-black/20">
-          <div class="relative">
-            <img src="${thumb}" alt="${title}" class="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
-            <span class="absolute left-4 top-4 rounded-full border border-amber-200/30 bg-black/45 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">${SiteApp.escapeHtml(badge)}</span>
-          </div>
-          <div class="p-4">
-            <h3 class="font-display text-2xl text-white">${title}</h3>
-            <p class="mt-2 text-xs uppercase tracking-[0.14em] text-amber-200/80">${type === 'video' ? 'Watch the moment' : 'Open gallery moment'}</p>
-          </div>
-        </a>
-      `;
-    }).join('');
-
-    mediaListEl.querySelectorAll('.reveal').forEach((node) => node.classList.add('in'));
   };
 
   const initHumanTilt = () => {
@@ -245,27 +179,20 @@
         SiteApp.loadTheme(),
         SiteApp.loadJson('/content/homepage.json').catch(() => ({}))
       ]);
-      const media = await SiteApp.loadJson('/content/media.json').catch(() => ({}));
 
       const hero = homepage.hero || {};
       const primaryEnabled = hero?.primaryCta?.enabled !== false;
       const secondaryEnabled = hero?.secondaryCta?.enabled !== false;
       const heroType = String(hero.backgroundType || 'image').toLowerCase();
-      const heroImageSrc = resolveDisplayImage(hero.backgroundImage, '');
       if (heroImageEl) {
-        heroImageEl.src = heroImageSrc;
-        heroImageEl.classList.remove('hidden');
+        heroImageEl.src = SiteApp.resolvePath(hero.backgroundImage || '/assets/hero.jpg');
+        heroImageEl.classList.toggle('hidden', heroType === 'video' && Boolean(hero.backgroundVideo));
       }
       if (heroVideoEl) {
         const videoUrl = SiteApp.safeExternalHref(hero.backgroundVideo) || SiteApp.resolvePath(hero.backgroundVideo || '');
         if (heroType === 'video' && videoUrl) {
           heroVideoEl.src = videoUrl;
-          heroVideoEl.classList.add('hidden');
-          const showVideo = () => {
-            heroVideoEl.classList.remove('hidden');
-          };
-          heroVideoEl.addEventListener('canplay', showVideo, { once: true });
-          heroVideoEl.addEventListener('loadeddata', showVideo, { once: true });
+          heroVideoEl.classList.remove('hidden');
         } else {
           heroVideoEl.classList.add('hidden');
           heroVideoEl.removeAttribute('src');
@@ -308,8 +235,7 @@
       if (storyEyebrowEl) storyEyebrowEl.textContent = story.eyebrow || 'About';
       if (storyTitleEl) storyTitleEl.textContent = story.title || '';
       if (storyIntroEl) storyIntroEl.textContent = story.intro || '';
-      renderStoryBlocks(story.blocks, heroImageSrc);
-      renderMediaItems(media, heroImageSrc);
+      renderStoryBlocks(story.blocks);
 
       applySectionConfig(homepage.sections);
       initParallax();
