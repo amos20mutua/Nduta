@@ -89,6 +89,21 @@
 
   const cacheKeyForPath = (path) => `${CONTENT_CACHE_PREFIX}${path}`;
 
+  const clearContentCache = (path = '') => {
+    try {
+      if (path) {
+        localStorage.removeItem(cacheKeyForPath(path));
+        return;
+      }
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(CONTENT_CACHE_PREFIX)) keys.push(key);
+      }
+      keys.forEach((key) => localStorage.removeItem(key));
+    } catch {}
+  };
+
   const readContentCache = (path, { allowExpired = false } = {}) => {
     try {
       const raw = localStorage.getItem(cacheKeyForPath(path));
@@ -146,7 +161,7 @@
       headers.Authorization = `Bearer ${anonKey}`;
     }
     const url = `${base}/content-get?path=${encodeURIComponent(path)}`;
-    const response = await fetchWithTimeout(url, { cache: 'default', headers }, CONTENT_API_TIMEOUT_MS);
+    const response = await fetchWithTimeout(url, { cache: 'no-store', headers }, CONTENT_API_TIMEOUT_MS);
     if (!response.ok) return null;
     const data = await response.json();
     return data?.payload ?? null;
@@ -159,21 +174,17 @@
       const hasApi = isContent && hasConfiguredContentApi(api);
 
       if (hasApi) {
+        try {
+          const apiPayload = await fetchContentViaApi(path, api);
+          if (apiPayload) {
+            writeContentCache(path, apiPayload);
+            return apiPayload;
+          }
+        } catch {}
         const cached = readContentCache(path, { allowExpired: true });
-        if (cached?.fresh && cached.payload !== null) {
-          fetchContentViaApi(path, api)
-            .then((fresh) => {
-              if (fresh) writeContentCache(path, fresh);
-            })
-            .catch(() => {});
+        if (cached?.payload !== null) {
           return cached.payload;
         }
-        const apiPayload = await fetchContentViaApi(path, api);
-        if (apiPayload) {
-          writeContentCache(path, apiPayload);
-          return apiPayload;
-        }
-        if (cached?.payload !== null) return cached.payload;
       }
       const localPayload = await fetchWithRetry(path, (res) => res.json());
       if (isContent && !hasApi) writeContentCache(path, localPayload);
@@ -539,25 +550,9 @@
     if (state.settings) return state.settings;
     const cacheEntry = readContentCache('/content/settings.json', { allowExpired: true });
     const localSettings = await fetchWithRetry('/content/settings.json', (res) => res.json());
-    const apiCandidate = cacheEntry?.payload?.api && hasConfiguredContentApi(cacheEntry.payload.api)
-      ? cacheEntry.payload.api
-      : localSettings?.api;
-
-    if (cacheEntry?.fresh && cacheEntry.payload && typeof cacheEntry.payload === 'object') {
-      state.settings = cacheEntry.payload;
-      fetchContentViaApi('/content/settings.json', apiCandidate)
-        .then((fresh) => {
-          if (fresh && typeof fresh === 'object') {
-            state.settings = fresh;
-            writeContentCache('/content/settings.json', fresh);
-          }
-        })
-        .catch(() => {});
-      return state.settings;
-    }
+    const apiCandidate = localSettings?.api || cacheEntry?.payload?.api || {};
 
     try {
-      if (!getCookie('essy_cache_warm')) setCookie('essy_cache_warm', '1', 7 * 24 * 60 * 60);
       const remoteSettings = await fetchContentViaApi('/content/settings.json', apiCandidate);
       if (remoteSettings && typeof remoteSettings === 'object') {
         state.settings = remoteSettings;
@@ -610,6 +605,7 @@
     resolvePath,
     formatDate,
     placeholderImageDataUrl,
+    clearContentCache,
     get settings() {
       return state.settings;
     },

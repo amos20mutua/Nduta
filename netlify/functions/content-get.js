@@ -17,7 +17,7 @@ exports.handler = async (event) => {
       updatedAt: result.updatedAt,
       source: result.source
     }, {
-      'Cache-Control': 'public, max-age=60, stale-while-revalidate=300'
+      'Cache-Control': 'no-store, max-age=0'
     });
   } catch (error) {
     return json(500, { error: 'Failed to load content', detail: error.message });

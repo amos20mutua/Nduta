@@ -17,6 +17,10 @@
   const saveAllBtn = document.getElementById("save-all");
 
   const settingsStorageKey = "essy_admin_editor_config_v2";
+  const contentCachePrefix = "essy_content_cache_v1:";
+  const imageUploadMaxDimension = 1600;
+  const imageUploadWarnBytes = 1.5 * 1024 * 1024;
+  const imageUploadTargetBytes = 900 * 1024;
   const refsByPath = new Map();
   const payloadByPath = new Map();
   const contentStateByPath = new Map();
@@ -32,6 +36,12 @@
     if (!feedbackEl) return;
     feedbackEl.textContent = message;
     feedbackEl.className = `mt-3 text-sm ${ok ? "text-emerald-200" : "text-rose-200"}`;
+  };
+
+  const clearCachedContent = (path) => {
+    try {
+      localStorage.removeItem(`${contentCachePrefix}${path}`);
+    } catch {}
   };
 
   const getConfig = () => ({
@@ -179,6 +189,7 @@
     });
     const data = await response.json().catch(() => ({}));
     if (response.status === 401) throw new Error("Unauthorized. Unlock admin access again or verify the optional fallback admin key.");
+    if (response.status === 413) throw new Error("This content payload is too large. Use smaller or compressed images, then try again.");
     if (!response.ok) throw new Error(data?.error || "Save failed");
   };
 
@@ -199,7 +210,7 @@
         <button type="button" data-upload-path="${esc(path)}" data-upload-key="${esc(key)}" class="btn-secondary rounded-full px-3 py-1 text-xs">Upload Image</button>
         <input type="file" accept="image/*" data-upload-input-path="${esc(path)}" data-upload-input-key="${esc(key)}" class="hidden" />
       </div>
-      <p class="text-[11px] text-amber-100/70">Uploads are saved in database content as image data.</p>
+      <p class="text-[11px] text-amber-100/70">Uploads are stored in database content as image data. Large files are resized before saving.</p>
     </div>
   `;
 
@@ -604,6 +615,83 @@
     return text;
   };
 
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Could not read selected image"));
+      reader.readAsDataURL(file);
+    });
+
+  const loadImageElement = (src) =>
+    new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("Could not process selected image"));
+      image.src = src;
+    });
+
+  const estimateDataUrlBytes = (dataUrl) => {
+    const base64 = String(dataUrl || "").split(",")[1] || "";
+    return Math.ceil((base64.length * 3) / 4);
+  };
+
+  const optimizeImageFile = async (file) => {
+    const type = String(file?.type || "").toLowerCase();
+    const originalDataUrl = await readFileAsDataUrl(file);
+
+    if (!type || type === "image/svg+xml" || type === "image/gif") {
+      return {
+        dataUrl: originalDataUrl,
+        note: "Image attached. Save section to persist."
+      };
+    }
+
+    const image = await loadImageElement(originalDataUrl);
+    const largestSide = Math.max(image.naturalWidth || 0, image.naturalHeight || 0);
+    const shouldResize = largestSide > imageUploadMaxDimension || file.size > imageUploadWarnBytes;
+    if (!shouldResize) {
+      return {
+        dataUrl: originalDataUrl,
+        note: "Image attached. Save section to persist."
+      };
+    }
+
+    const scale = largestSide > imageUploadMaxDimension ? imageUploadMaxDimension / largestSide : 1;
+    const width = Math.max(1, Math.round((image.naturalWidth || 1) * Math.min(1, scale)));
+    const height = Math.max(1, Math.round((image.naturalHeight || 1) * Math.min(1, scale)));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return {
+        dataUrl: originalDataUrl,
+        note: "Image attached. Save section to persist."
+      };
+    }
+
+    context.drawImage(image, 0, 0, width, height);
+
+    const outputType = type === "image/png" ? "image/png" : type === "image/webp" ? "image/webp" : "image/jpeg";
+    let quality = outputType === "image/png" ? undefined : 0.88;
+    let optimizedDataUrl = canvas.toDataURL(outputType, quality);
+    while (quality && estimateDataUrlBytes(optimizedDataUrl) > imageUploadTargetBytes && quality > 0.62) {
+      quality = Number((quality - 0.08).toFixed(2));
+      optimizedDataUrl = canvas.toDataURL(outputType, quality);
+    }
+
+    const optimizedBytes = estimateDataUrlBytes(optimizedDataUrl);
+    const note = optimizedBytes > imageUploadWarnBytes
+      ? "Image attached, but it is still large. If saving fails, use a smaller/compressed image."
+      : "Image attached and optimized for faster loading. Save section to persist.";
+
+    return {
+      dataUrl: optimizedDataUrl,
+      note
+    };
+  };
+
   const applySpecialTransforms = (path, field, value, payload) => {
     if (path === "/content/events.json" && (field.endsWith(".galleryImages") || field.endsWith(".galleryVideos"))) {
       return linesToArray(value);
@@ -675,22 +763,24 @@
     });
 
     refs.easy.querySelectorAll("[data-upload-input-path][data-upload-input-key]").forEach((input) => {
-      input.addEventListener("change", () => {
+      input.addEventListener("change", async () => {
         const file = input.files?.[0];
         if (!file) return;
         const uploadPath = input.getAttribute("data-upload-input-path") || "";
         const uploadKey = input.getAttribute("data-upload-input-key") || "";
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = String(reader.result || "");
+        try {
+          const { dataUrl, note } = await optimizeImageFile(file);
           const targetInput = refs.easy.querySelector(`[data-field="${uploadPath}:${uploadKey}"]`);
           if (targetInput) {
             targetInput.value = dataUrl;
             targetInput.dispatchEvent(new Event("input", { bubbles: true }));
-            setStatus(path, "Image attached. Save section to persist.");
+            setStatus(path, note);
           }
-        };
-        reader.readAsDataURL(file);
+        } catch (error) {
+          setStatus(path, error?.message || "Could not attach image.", false);
+        } finally {
+          input.value = "";
+        }
       });
     });
 
@@ -787,6 +877,8 @@
       }
       const payload = payloadByPath.get(path);
       await saveContent(path, payload);
+      clearCachedContent(path);
+      if (path === "/content/settings.json") clearCachedContent("/content/settings.json");
       contentStateByPath.set(path, {
         source: "db",
         canSave: true,
