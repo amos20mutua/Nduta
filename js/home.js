@@ -21,6 +21,12 @@
   const mediaListEl = document.getElementById('home-media-list');
 
   const reduceMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const starterImagePaths = new Set([
+    '/assets/hero.jpg',
+    '/assets/event-1.jpg',
+    '/assets/gallery-1.jpg',
+    '/assets/music-1.jpg'
+  ]);
 
   const applySectionConfig = (sections) => {
     const defaults = [{ id: 'story', enabled: true, order: 0 }];
@@ -62,7 +68,14 @@
     return SiteApp.resolvePath(href || '/contact.html');
   };
 
-  const renderStoryBlocks = (items) => {
+  const resolveDisplayImage = (src, fallback) => {
+    const raw = String(src || '').trim();
+    if (raw && !starterImagePaths.has(raw)) return SiteApp.resolvePath(raw);
+    if (fallback) return fallback;
+    return SiteApp.placeholderImageDataUrl();
+  };
+
+  const renderStoryBlocks = (items, heroImageFallback) => {
     if (!storyBlocksEl) return;
     const list = Array.isArray(items) ? items : [];
     if (!list.length) {
@@ -76,7 +89,7 @@
         const title = SiteApp.escapeHtml(String(block?.title || ''));
         const eyebrow = SiteApp.escapeHtml(String(block?.eyebrow || ''));
         const body = textToParagraphs(block?.body);
-        const image = SiteApp.resolvePath(block?.image || '/assets/hero.jpg');
+        const image = resolveDisplayImage(block?.image, heroImageFallback);
         const imageAlt = SiteApp.escapeHtml(String(block?.imageAlt || block?.title || 'Essy Singer photo'));
         const caption = SiteApp.escapeHtml(String(block?.imageCaption || ''));
         const ctaText = SiteApp.escapeHtml(String(block?.ctaText || ''));
@@ -132,7 +145,7 @@
     return { href: SiteApp.resolvePath(item?.link || '/music.html'), external: false };
   };
 
-  const renderMediaItems = (payload) => {
+  const renderMediaItems = (payload, heroImageFallback) => {
     if (!mediaSectionEl || !mediaListEl) return;
     const items = SiteApp.listFromPayload(payload).slice(0, 6);
     if (!items.length) {
@@ -152,7 +165,7 @@
       const attrs = target.external ? ' target="_blank" rel="noopener noreferrer"' : '';
       const type = String(item?.type || 'image').toLowerCase();
       const title = SiteApp.escapeHtml(String(item?.title || 'Media moment'));
-      const thumb = SiteApp.escapeHtml(SiteApp.resolvePath(item?.thumbnail || '/assets/hero.jpg'));
+      const thumb = SiteApp.escapeHtml(resolveDisplayImage(item?.thumbnail, heroImageFallback));
       const badge = type === 'video' ? 'Video' : 'Photo';
 
       return `
@@ -238,8 +251,9 @@
       const primaryEnabled = hero?.primaryCta?.enabled !== false;
       const secondaryEnabled = hero?.secondaryCta?.enabled !== false;
       const heroType = String(hero.backgroundType || 'image').toLowerCase();
+      const heroImageSrc = resolveDisplayImage(hero.backgroundImage, '');
       if (heroImageEl) {
-        heroImageEl.src = SiteApp.resolvePath(hero.backgroundImage || '/assets/hero.jpg');
+        heroImageEl.src = heroImageSrc;
         heroImageEl.classList.remove('hidden');
       }
       if (heroVideoEl) {
@@ -294,8 +308,8 @@
       if (storyEyebrowEl) storyEyebrowEl.textContent = story.eyebrow || 'About';
       if (storyTitleEl) storyTitleEl.textContent = story.title || '';
       if (storyIntroEl) storyIntroEl.textContent = story.intro || '';
-      renderStoryBlocks(story.blocks);
-      renderMediaItems(media);
+      renderStoryBlocks(story.blocks, heroImageSrc);
+      renderMediaItems(media, heroImageSrc);
 
       applySectionConfig(homepage.sections);
       initParallax();
