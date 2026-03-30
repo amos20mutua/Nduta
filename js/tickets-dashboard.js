@@ -56,7 +56,7 @@
     const headers = buildFunctionHeaders(adminKey ? { 'x-admin-key': adminKey } : {});
     const res = await fetch(buildFunctionUrl(`/admin-tickets${query()}`), { headers });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to load');
+    if (!res.ok) throw new Error(data.error || 'The tickets dashboard could not be loaded.');
 
     ticketsBody.innerHTML = (data.tickets || [])
       .map((t) => `<tr><td class="px-2 py-2">${t.holder_name || ''}<div class="text-xs text-amber-200/80">${t.holder_email || ''}</div></td><td class="px-2 py-2">${t.event_id}</td><td class="px-2 py-2">${t.status}</td><td class="px-2 py-2">${t.checked_in ? 'Yes' : 'No'}</td></tr>`)
@@ -68,14 +68,14 @@
       .join('');
   };
 
-  loadBtn?.addEventListener('click', () => load().catch((e) => alert(e.message)));
+  loadBtn?.addEventListener('click', () => load().catch((e) => alert(e.message || 'The tickets dashboard could not be loaded.')));
   exportBtn?.addEventListener('click', () => {
     const adminKey = String(adminKeyInput?.value || '').trim();
     const headers = buildFunctionHeaders(adminKey ? { 'x-admin-key': adminKey } : {});
     const url = `${buildFunctionUrl(`/admin-tickets${query()}`)}${query() ? '&' : '?'}format=csv`;
     fetch(url, { headers })
       .then(async (res) => {
-        if (!res.ok) throw new Error('Unauthorized');
+        if (!res.ok) throw new Error('Export is not available until you sign in again.');
         const blob = await res.blob();
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -86,7 +86,7 @@
         link.remove();
         URL.revokeObjectURL(href);
       })
-      .catch((e) => alert(e.message || 'Export failed'));
+      .catch((e) => alert(e.message || 'Ticket export could not be completed.'));
   });
 
   window.addEventListener('admin-session-ready', () => {

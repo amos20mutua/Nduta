@@ -45,11 +45,11 @@
             <p class="text-xs uppercase tracking-[0.2em] text-amber-200">${release || 'Release'}${item.featured ? ' - Featured' : ''}</p>
             <h2 class="mt-2 font-display text-2xl leading-tight text-white">${SiteApp.escapeHtml(item.title || 'Untitled release')}</h2>
           </div>
-          <div class="flex flex-wrap gap-2">${links || '<p class="text-sm text-amber-50/70">Streaming links will appear here once this release is published.</p>'}</div>
+          <div class="flex flex-wrap gap-2">${links || '<p class="text-sm text-amber-50/70">Streaming links will be added here as soon as this release is published.</p>'}</div>
           ${lyrics ? `
             <div class="rounded-2xl border border-amber-200/15 bg-black/20 p-4">
               <button type="button" class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber-200" data-toggle-lyrics="${lyricsId}" aria-expanded="false" aria-controls="${lyricsId}">
-                Lyrics Preview
+                Preview Lyrics
               </button>
               <div id="${lyricsId}" class="mt-3 hidden whitespace-pre-line text-sm leading-7 text-amber-50/85">${SiteApp.escapeHtml(lyrics)}</div>
             </div>
@@ -97,9 +97,9 @@
       if (!items.length) {
         listEl.innerHTML = `
           <article class="section-shell p-7 sm:col-span-2">
-            <p class="text-xs uppercase tracking-[0.16em] text-amber-200">Coming Soon</p>
-            <h2 class="mt-3 font-display text-3xl text-white">New releases are being prepared.</h2>
-            <p class="mt-3 max-w-2xl text-sm text-amber-50/80">This page is ready for songs, live sessions, and streaming links. Once releases are published in the admin editor, they will appear here automatically.</p>
+            <p class="text-xs uppercase tracking-[0.16em] text-amber-200">Music Library</p>
+            <h2 class="mt-3 font-display text-3xl text-white">Songs will appear here as they are released.</h2>
+            <p class="mt-3 max-w-2xl text-sm text-amber-50/80">The music page is ready to feature new songs, live sessions, lyrics, and listening links. When a release is published from the editor, it will appear here automatically.</p>
             <div class="mt-5 flex flex-wrap gap-3">
               <a href="${SiteApp.resolvePath('/contact.html')}" class="btn-primary inline-flex rounded-full px-5 py-2.5 text-sm font-semibold uppercase tracking-wide">Contact for Ministry</a>
               <a href="${SiteApp.resolvePath('/events.html')}" class="btn-secondary inline-flex rounded-full px-5 py-2.5 text-sm font-semibold uppercase tracking-wide">View Events</a>
@@ -114,6 +114,6 @@
       bindLyricsToggles();
     })
     .catch(() => {
-      if (listEl) listEl.innerHTML = '<p class="text-sm text-rose-300">Could not load music.</p>';
+      if (listEl) listEl.innerHTML = '<p class="text-sm text-rose-300">Music could not be loaded right now.</p>';
     });
 })();

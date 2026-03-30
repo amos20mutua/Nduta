@@ -45,9 +45,9 @@
     if (state.loadErrorShown) return;
     state.loadErrorShown = true;
     const wrap = document.createElement('div');
-    wrap.className = 'fixed bottom-20 left-1/2 z-[90] w-[95%] max-w-xl -translate-x-1/2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900 shadow-lg';
+    wrap.className = 'fixed bottom-20 left-1/2 z-[90] w-[95%] max-w-xl -translate-x-1/2 rounded-xl border border-amber-200/30 bg-[#2b2225] px-4 py-3 text-sm text-amber-50 shadow-lg';
     wrap.setAttribute('role', 'alert');
-    wrap.innerHTML = 'Could not load local files. Run a local server from this folder, for example: <code>npx serve</code>.';
+    wrap.innerHTML = 'Content could not be loaded in this preview. Open the site through its local server, for example <code>npx serve</code>, or use the deployed site.';
     document.body.appendChild(wrap);
   };
 
@@ -61,7 +61,7 @@
     let lastError;
     for (let i = 0; i < attempts; i += 1) {
       try {
-        const response = await fetch(resolvePath(path), { cache: 'default' });
+        const response = await fetch(resolvePath(path), { cache: 'no-store' });
         if (!response.ok) throw new Error(`Failed to load ${path}`);
         return await parser(response);
       } catch (error) {
@@ -448,7 +448,18 @@
   };
 
   const placeholderImageDataUrl = () => {
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#49233a'/><stop offset='100%' stop-color='#c35f83'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/></svg>`;
+    const svg = `
+      <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'>
+        <rect width='1200' height='800' fill='#221b1d'/>
+        <rect x='48' y='48' width='1104' height='704' rx='28' fill='none' stroke='#6e5b3b' stroke-width='2'/>
+        <g fill='none' stroke='#d4af37' stroke-width='18' stroke-linecap='round' stroke-linejoin='round' opacity='0.9'>
+          <path d='M420 310h360v180H420z'/>
+          <path d='M420 490l120-115 105 96 60-55 75 74'/>
+          <path d='M705 360h.1'/>
+        </g>
+        <text x='600' y='610' fill='#f7edcf' font-family='Georgia, serif' font-size='42' text-anchor='middle'>Image unavailable</text>
+      </svg>
+    `.trim();
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
   };
 
@@ -460,6 +471,7 @@
         if (!(target instanceof HTMLImageElement)) return;
         if (target.dataset.fallbackApplied === 'true') return;
         target.dataset.fallbackApplied = 'true';
+        target.alt = target.alt ? `${target.alt} (image unavailable)` : 'Image unavailable';
         target.src = placeholderImageDataUrl();
       },
       true

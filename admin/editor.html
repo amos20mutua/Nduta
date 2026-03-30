@@ -19,22 +19,22 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="font-display text-4xl text-white">Website Editor</h1>
-        <p class="mt-2 text-sm text-amber-50/80">Easy Form Mode: type in boxes, click Save. No coding needed.</p>
+        <p class="mt-2 text-sm text-amber-50/80">Update each section in clear form fields, then save when you are ready.</p>
       </div>
       <a href="./index.html" class="btn-secondary rounded-full px-4 py-2 text-sm">Back</a>
     </div>
 
     <section class="section-shell mt-4 p-4">
-      <p class="text-sm text-amber-50/85">Quick steps: 1) Click <strong>Load All</strong> 2) Edit fields (use <strong>Upload Image</strong> where needed) 3) Click <strong>Save</strong> on a section or <strong>Save All</strong>.</p>
+      <p class="text-sm text-amber-50/85">Quick steps: 1) Load the latest content 2) Update fields and upload images where needed 3) Save one section at a time or save everything together.</p>
     </section>
 
     <section class="section-shell mt-6 p-4">
       <label class="text-xs uppercase tracking-wide text-amber-200" for="functions-base-url">Functions Base URL (optional)</label>
-      <input id="functions-base-url" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Leave blank on Netlify same-origin" />
+      <input id="functions-base-url" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Leave blank for the current Netlify site" />
       <label class="mt-3 block text-xs uppercase tracking-wide text-amber-200" for="anon-key">Public API Key (optional)</label>
-      <input id="anon-key" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Leave blank unless browser requests need a public key" />
-      <label class="mt-3 block text-xs uppercase tracking-wide text-amber-200" for="admin-key">Legacy Admin Key (optional fallback)</label>
-      <input id="admin-key" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Leave blank when using username/password login" />
+      <input id="anon-key" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Only fill this in if the site uses a public browser key" />
+      <label class="mt-3 block text-xs uppercase tracking-wide text-amber-200" for="admin-key">Backup Access Key (optional)</label>
+      <input id="admin-key" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Usually not needed when signed in with username and password" />
       <div class="mt-3 flex flex-wrap gap-2">
         <button id="load-all" class="btn-secondary rounded-full px-4 py-2 text-sm">Load All</button>
         <button id="save-all" class="btn-primary rounded-full px-4 py-2 text-sm">Save All</button>

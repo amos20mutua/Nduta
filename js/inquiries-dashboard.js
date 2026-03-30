@@ -132,11 +132,11 @@
             body: JSON.stringify({ id: inquiryId, status: nextStatus })
           });
           const data = await response.json().catch(() => ({}));
-          if (!response.ok) throw new Error(data?.error || 'Could not update inquiry');
+          if (!response.ok) throw new Error(data?.error || 'The booking request could not be updated.');
           await load();
-          setFeedback('Inquiry updated.');
+          setFeedback('Booking request updated.');
         } catch (error) {
-          setFeedback(error.message || 'Could not update inquiry', false);
+          setFeedback(error.message || 'The booking request could not be updated.', false);
         }
       });
     });
@@ -152,20 +152,20 @@
       headers: buildFunctionHeaders()
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data?.error || 'Could not load inquiries');
+    if (!response.ok) throw new Error(data?.error || 'Booking requests could not be loaded.');
     renderList(Array.isArray(data?.items) ? data.items : []);
   };
 
   loadBtn?.addEventListener('click', () => {
     load()
       .then(() => setFeedback('Booking requests loaded.'))
-      .catch((error) => setFeedback(error.message || 'Could not load inquiries', false));
+      .catch((error) => setFeedback(error.message || 'Booking requests could not be loaded.', false));
   });
 
   statusFilter?.addEventListener('change', () => {
     load()
       .then(() => setFeedback('Booking requests loaded.'))
-      .catch((error) => setFeedback(error.message || 'Could not load inquiries', false));
+      .catch((error) => setFeedback(error.message || 'Booking requests could not be loaded.', false));
   });
 
   window.addEventListener('admin-session-ready', () => {
@@ -177,6 +177,6 @@
     await loadApiConfig();
     load()
       .then(() => setFeedback('Booking requests loaded.'))
-      .catch((error) => setFeedback(error.message || 'Could not load inquiries', false));
+      .catch((error) => setFeedback(error.message || 'Booking requests could not be loaded.', false));
   });
 })();

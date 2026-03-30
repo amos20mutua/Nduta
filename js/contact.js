@@ -108,12 +108,12 @@
       };
 
       if (!payload.name || !payload.email || !payload.message) {
-        setFormFeedback('Please fill in your name, email, and message.', false);
+        setFormFeedback('Please add your name, email address, and message before sending.', false);
         return;
       }
 
       if (bookingSubmitBtn instanceof HTMLButtonElement) bookingSubmitBtn.disabled = true;
-      setFormFeedback('Sending booking request...');
+      setFormFeedback('Sending your booking request...');
 
       try {
         const data = await submitBookingRequest(payload);
@@ -121,8 +121,8 @@
         setFormFeedback(data?.message || 'Booking request sent. You will receive a response soon.');
       } catch (error) {
         const fallback = siteEmail
-          ? `Could not submit online right now. Please email ${siteEmail} instead.`
-          : 'Could not submit online right now. Please use the direct contact buttons below.';
+          ? `The form could not be sent just now. Please email ${siteEmail} instead.`
+          : 'The form could not be sent just now. Please use the direct contact options below.';
         setFormFeedback(error?.message || fallback, false);
       } finally {
         if (bookingSubmitBtn instanceof HTMLButtonElement) bookingSubmitBtn.disabled = false;

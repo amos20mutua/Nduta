@@ -1,10 +1,10 @@
 (() => {
   const contentItems = [
-    { label: "Site Settings", path: "/content/settings.json", hint: "Branding, contact, navigation, footer, social links." },
-    { label: "Homepage", path: "/content/homepage.json", hint: "Hero and story content seen on home page." },
-    { label: "Events", path: "/content/events.json", hint: "Event cards, dates, ticket settings and prices." },
-    { label: "Music", path: "/content/music.json", hint: "Songs, release dates, cover images and links." },
-    { label: "Media", path: "/content/media.json", hint: "Gallery/media cards and embed links." },
+    { label: "Site Settings", path: "/content/settings.json", hint: "Branding, contact details, navigation, footer, and page copy." },
+    { label: "Homepage", path: "/content/homepage.json", hint: "Hero and story content shown on the public home page." },
+    { label: "Events", path: "/content/events.json", hint: "Events, dates, ticket settings, and pricing. Only future-dated events show on the public page." },
+    { label: "Music", path: "/content/music.json", hint: "Songs, cover images, release dates, lyrics, and streaming links." },
+    { label: "Media", path: "/content/media.json", hint: "Reserved gallery content. The current public pages do not display this file." },
     { label: "Theme", path: "/content/theme.json", hint: "Accent colors and style classes." },
   ];
 
@@ -21,6 +21,12 @@
   const imageUploadMaxDimension = 1600;
   const imageUploadWarnBytes = 1.5 * 1024 * 1024;
   const imageUploadTargetBytes = 900 * 1024;
+  const starterAssetPaths = new Set([
+    "/assets/hero.jpg",
+    "/assets/event-1.jpg",
+    "/assets/music-1.jpg",
+    "/assets/gallery-1.jpg"
+  ]);
   const refsByPath = new Map();
   const payloadByPath = new Map();
   const contentStateByPath = new Map();
@@ -147,12 +153,12 @@
             ? {
                 source: "local-seed",
                 canSave: true,
-                message: "Loaded bundled file because the backend does not have a saved copy yet. Saving will create one.",
+                message: "Loaded the bundled file because the live database does not have a saved copy yet. Saving will publish the first live version.",
               }
             : {
                 source: "local-fallback",
                 canSave: false,
-                message: `Loaded bundled file because backend content could not be reached${apiMessage ? ` (${apiMessage})` : ""}. Reload before saving to avoid overwriting newer content.`,
+                message: `Loaded the bundled file because the live content service could not be reached${apiMessage ? ` (${apiMessage})` : ""}. Reload from the backend before saving so newer live content is not overwritten.`,
               },
         };
       } catch (error) {
@@ -162,7 +168,7 @@
           state: {
             source: "local-fallback",
             canSave: false,
-            message: `Loaded bundled file because backend content could not be reached (${error?.message || "network error"}). Reload before saving to avoid overwriting newer content.`,
+            message: `Loaded the bundled file because the live content service could not be reached (${error?.message || "network error"}). Reload from the backend before saving so newer live content is not overwritten.`,
           },
         };
       }
@@ -173,7 +179,7 @@
       state: {
         source: "local-only",
         canSave: true,
-        message: "Loaded bundled file. Backend routes are unavailable from this environment.",
+        message: "Loaded the bundled file. Live save routes are not available in this environment.",
       },
     };
   };
@@ -188,7 +194,7 @@
       body: JSON.stringify({ path, payload }),
     });
     const data = await response.json().catch(() => ({}));
-    if (response.status === 401) throw new Error("Unauthorized. Unlock admin access again or verify the optional fallback admin key.");
+    if (response.status === 401) throw new Error("Your admin session is no longer active. Sign in again or use the backup access key if one is configured.");
     if (response.status === 413) throw new Error("This content payload is too large. Use smaller or compressed images, then try again.");
     if (!response.ok) throw new Error(data?.error || "Save failed");
   };
@@ -245,7 +251,7 @@
         </div>
         <div class="mt-4 grid gap-3" data-easy="true"></div>
         <details class="mt-4">
-          <summary class="cursor-pointer text-xs uppercase tracking-wide text-amber-200">Advanced JSON (for developer)</summary>
+          <summary class="cursor-pointer text-xs uppercase tracking-wide text-amber-200">Advanced JSON</summary>
           <textarea data-raw="true" rows="10" class="mt-2 w-full rounded-md border border-amber-200/25 bg-black/35 p-3 text-xs text-amber-50"></textarea>
         </details>
         <p data-status="true" class="mt-3 text-xs text-amber-100/75"></p>
@@ -261,11 +267,115 @@
     refs.raw.value = JSON.stringify(payload, null, 2);
   };
 
-  const setStatus = (path, message, ok = true) => {
+  const setStatus = (path, message, tone = "ok") => {
     const refs = refsByPath.get(path);
     if (!refs?.status) return;
     refs.status.textContent = message;
-    refs.status.className = `mt-3 text-xs ${ok ? "text-emerald-200" : "text-rose-200"}`;
+    const toneClass = tone === "error" ? "text-rose-200" : tone === "warn" ? "text-amber-200" : "text-emerald-200";
+    refs.status.className = `mt-3 text-xs ${toneClass}`;
+  };
+
+  const isPastDate = (value) => {
+    if (!value) return false;
+    const date = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return false;
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    return date.getTime() < startOfToday;
+  };
+
+  const usesStarterAsset = (value) => starterAssetPaths.has(String(value || "").trim());
+
+  const collectWarnings = (path, payload) => {
+    const warnings = [];
+
+    if (path === "/content/settings.json") {
+      const contact = ensureObject(payload.contact);
+      if (!String(contact.email || "").trim() && !String(contact.phone || "").trim()) {
+        warnings.push("No public contact email or phone number is set.");
+      }
+    }
+
+    if (path === "/content/homepage.json") {
+      const hero = ensureObject(payload.hero);
+      const story = ensureObject(payload.story);
+      const sections = ensureArray(payload.sections);
+      const storySection = ensureObject(sections.find((section) => section?.id === "story"));
+      if (String(hero.backgroundType || "").trim().toLowerCase() === "image" && !String(hero.backgroundImage || "").trim()) {
+        warnings.push("The hero is set to use an image, but no hero image is provided.");
+      }
+      if (String(hero.backgroundType || "").trim().toLowerCase() === "video" && !String(hero.backgroundVideo || "").trim()) {
+        warnings.push("The hero is set to use a video, but no video URL is provided.");
+      }
+      if (storySection.enabled !== false && ensureArray(story.blocks).length === 0) {
+        warnings.push("The story section is enabled, but it has no content blocks.");
+      }
+      if (usesStarterAsset(hero.backgroundImage)) {
+        warnings.push("The hero image is still using a starter asset.");
+      }
+      const storyUsesStarterImage = ensureArray(story.blocks).some((block) => usesStarterAsset(block?.image));
+      if (storyUsesStarterImage) {
+        warnings.push("One or more story images are still using starter assets.");
+      }
+    }
+
+    if (path === "/content/events.json") {
+      const items = ensureArray(payload.items).filter((item) => item?.enabled !== false);
+      if (!items.length) {
+        warnings.push("No enabled events are available for the public events page.");
+      }
+      const visibleUpcoming = items.filter((item) => {
+        const date = String(item?.date || "").trim();
+        const parsed = new Date(`${date}T00:00:00`).getTime();
+        return !Number.isNaN(parsed) && !isPastDate(date);
+      });
+      if (items.length > 0 && visibleUpcoming.length === 0) {
+        warnings.push("All enabled events are dated in the past, so the public events page will appear empty.");
+      }
+      items.forEach((item) => {
+        const title = String(item?.title || "Untitled event").trim();
+        const date = String(item?.date || "").trim();
+        if (!date || Number.isNaN(new Date(`${date}T00:00:00`).getTime())) {
+          warnings.push(`"${title}" has an invalid date and will not display correctly.`);
+          return;
+        }
+        if (isPastDate(date) && String(item?.status || "").trim().toLowerCase() === "available") {
+          warnings.push(`"${title}" is in the past and will be hidden on the public events page.`);
+        }
+        if (usesStarterAsset(item?.bannerImage)) {
+          warnings.push(`"${title}" is still using a starter poster image.`);
+        }
+      });
+    }
+
+    if (path === "/content/music.json") {
+      const items = ensureArray(payload.items);
+      if (items.length === 0) {
+        warnings.push("No music releases are published yet, so the page will show an empty state.");
+      }
+      if (items.some((item) => usesStarterAsset(item?.coverImage))) {
+        warnings.push("One or more music covers are still using starter assets.");
+      }
+    }
+
+    if (path === "/content/media.json") {
+      warnings.push("This file is currently not used by the public site.");
+      if (ensureArray(payload.items).some((item) => usesStarterAsset(item?.thumbnail))) {
+        warnings.push("One or more media thumbnails are still using starter assets.");
+      }
+    }
+
+    return warnings;
+  };
+
+  const applyStatusWithWarnings = (path, message, baseTone = "ok") => {
+    const warnings = collectWarnings(path, payloadByPath.get(path) || {});
+    if (!warnings.length) {
+      setStatus(path, message, baseTone);
+      return;
+    }
+    const tone = baseTone === "error" ? "error" : "warn";
+    setStatus(path, `${message} Review: ${warnings.join(" ")}`, tone);
   };
 
   const renderSettingsForm = (path, payload) => {
@@ -750,6 +860,12 @@
         if (val !== "__handled__") setValueByPath(currentPayload, dotted, val);
         payloadByPath.set(fieldPath, currentPayload);
         syncRaw(fieldPath);
+        const sectionState = contentStateByPath.get(fieldPath);
+        if (sectionState?.canSave === false) {
+          applyStatusWithWarnings(fieldPath, `${sectionState.message} Changes remain local until backend reload succeeds.`, "warn");
+        } else {
+          applyStatusWithWarnings(fieldPath, "Changes ready to save.", "ok");
+        }
       });
     });
 
@@ -774,10 +890,10 @@
           if (targetInput) {
             targetInput.value = dataUrl;
             targetInput.dispatchEvent(new Event("input", { bubbles: true }));
-            setStatus(path, note);
+            applyStatusWithWarnings(path, note, "ok");
           }
         } catch (error) {
-          setStatus(path, error?.message || "Could not attach image.", false);
+          setStatus(path, error?.message || "Could not attach the selected image.", "error");
         } finally {
           input.value = "";
         }
@@ -837,34 +953,40 @@
 
         payloadByPath.set(path, payloadData);
         renderEasyForPath(path);
+        const sectionState = contentStateByPath.get(path);
+        if (sectionState?.canSave === false) {
+          applyStatusWithWarnings(path, `${sectionState.message} Changes remain local until backend reload succeeds.`, "warn");
+        } else {
+          applyStatusWithWarnings(path, "Changes ready to save.", "ok");
+        }
       });
     });
   };
 
   const loadSection = async (path) => {
-    setStatus(path, "Loading...");
+    setStatus(path, "Loading...", "ok");
     try {
       const result = await loadContent(path);
       payloadByPath.set(path, result.payload);
       contentStateByPath.set(path, result.state);
       renderEasyForPath(path);
       setSectionSaveState(path);
-      setStatus(path, result.state.message, result.state.canSave !== false);
+      applyStatusWithWarnings(path, result.state.message, result.state.canSave === false ? "warn" : "ok");
       return true;
     } catch (error) {
       contentStateByPath.delete(path);
       setSectionSaveState(path);
-      setStatus(path, error?.message || "Load failed", false);
+      setStatus(path, error?.message || "This section could not be loaded.", "error");
       return false;
     }
   };
 
   const saveSection = async (path) => {
-    setStatus(path, "Saving...");
+    setStatus(path, "Saving...", "ok");
     try {
       const state = contentStateByPath.get(path);
       if (state?.canSave === false) {
-        throw new Error("This section was loaded from local fallback because backend content could not be reached. Reload until it loads from backend before saving.");
+        throw new Error("This section was loaded from the bundled file because the live backend could not be reached. Reload from the backend before saving.");
       }
       const refs = refsByPath.get(path);
       if (refs?.raw?.value) {
@@ -872,7 +994,7 @@
           const parsed = JSON.parse(refs.raw.value);
           payloadByPath.set(path, parsed);
         } catch {
-          throw new Error("Advanced JSON is invalid");
+          throw new Error("The advanced JSON contains invalid formatting.");
         }
       }
       const payload = payloadByPath.get(path);
@@ -885,10 +1007,10 @@
         message: "Saved to site content database.",
       });
       setSectionSaveState(path);
-      setStatus(path, "Saved to site content database.");
+      applyStatusWithWarnings(path, "Saved to site content database.", "ok");
       return true;
     } catch (error) {
-      setStatus(path, error?.message || "Save failed", false);
+      setStatus(path, error?.message || "This section could not be saved.", "error");
       return false;
     }
   };
@@ -906,12 +1028,12 @@
           renderEasyForPath(item.path);
           const state = contentStateByPath.get(item.path);
           if (state?.canSave === false) {
-            setStatus(item.path, `${state.message} JSON edits are local only until backend reload succeeds.`, false);
+            applyStatusWithWarnings(item.path, `${state.message} JSON edits are local only until backend reload succeeds.`, "warn");
           } else {
-            setStatus(item.path, "Advanced JSON applied");
+            applyStatusWithWarnings(item.path, "Advanced JSON applied.", "ok");
           }
         } catch {
-          setStatus(item.path, "Advanced JSON is invalid", false);
+          setStatus(item.path, "The advanced JSON contains invalid formatting.", "error");
         }
       });
     });
@@ -928,7 +1050,7 @@
     }
     if (failed) return setFeedback(`Loaded with ${failed} issue(s).`, false);
     if (blocked) {
-      return setFeedback(`Loaded with warning: ${blocked} section(s) came from local fallback. Reload those sections from backend before saving.`, false);
+      return setFeedback(`Loaded with warning: ${blocked} section(s) are using bundled fallback content. Reload those sections from the backend before saving.`, false);
     }
     setFeedback("All sections loaded.");
   };

@@ -64,12 +64,12 @@
       });
       const data = await res.json();
       if (!res.ok) {
-        setResult(data.error || 'Validation failed', false);
+        setResult(data.error || 'This ticket could not be validated.', false);
         return;
       }
       setResult(`Checked in: ${data.ticket.holder_name || data.ticket.id}`, true);
     } catch (error) {
-      setResult(error.message || 'Scanner error', false);
+      setResult(error.message || 'The scanner is not available right now.', false);
     }
   };
 
@@ -94,7 +94,7 @@
         () => {}
       );
     } catch {
-      setResult('Camera scanner unavailable. Use manual token paste.', false);
+      setResult('Camera access is not available here. Paste the ticket token manually instead.', false);
     }
   });
 })();
