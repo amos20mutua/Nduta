@@ -379,32 +379,18 @@ h6,
 .events-poster-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: 0.85rem;
+  border-radius: 0;
   background: transparent;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 0;
 }
 
 .events-poster-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  image-rendering: auto;
   display: block;
-}
-
-@media (max-width: 768px) {
-  .events-poster-wrap {
-    aspect-ratio: 4 / 3;
-  }
-}
-
-@media (max-width: 480px) {
-  .events-poster-wrap {
-    aspect-ratio: 1 / 1;
-  }
+  width: 100%;
+  height: auto;
+  image-rendering: auto;
+  max-height: min(75vh, 46rem);
 }
 
 .reveal {
@@ -936,7 +922,8 @@ h6,
 .story-block--split {
   display: grid;
   align-items: center;
-  gap: 1rem;
+  gap: 0;
+  overflow: hidden;
 }
 
 .story-block--split.story-block--image-left .story-media {
@@ -952,17 +939,28 @@ h6,
   overflow: hidden;
 }
 
+.story-block--image,
+.story-block--split {
+  padding: 0;
+}
+
+.story-block--split .story-copy {
+  padding: 1.1rem;
+}
+
 .story-media img,
 .story-block--image img {
+  display: block;
   width: 100%;
-  border-radius: 0.85rem;
+  border-radius: 0;
   object-fit: cover;
   max-height: 560px;
 }
 
 .story-media figcaption,
 .story-block--image figcaption {
-  margin-top: 0.5rem;
+  margin-top: 0;
+  padding: 0.85rem 1.1rem 1rem;
   font-size: 0.74rem;
   color: #7a625c;
 }
