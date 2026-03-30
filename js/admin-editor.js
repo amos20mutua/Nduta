@@ -57,8 +57,10 @@
   ];
   const editorQuery = new URLSearchParams(window.location.search);
   const requestedSectionSlug = String(editorQuery.get("section") || "").trim().toLowerCase();
+  const fullEditorMode = String(editorQuery.get("view") || "").trim().toLowerCase() === "all";
   const selectedContentItem = allContentItems.find((item) => item.slug === requestedSectionSlug) || null;
-  const contentItems = selectedContentItem ? [selectedContentItem] : allContentItems;
+  const chooserMode = !selectedContentItem && !fullEditorMode;
+  const contentItems = selectedContentItem ? [selectedContentItem] : fullEditorMode ? allContentItems : [];
 
   const baseUrlInput = document.getElementById("functions-base-url");
   const anonKeyInput = document.getElementById("anon-key");
@@ -68,8 +70,11 @@
   const editorBackLinkEl = document.getElementById("editor-back-link");
   const editorContextLinksEl = document.getElementById("editor-context-links");
   const editorFlowCopyEl = document.getElementById("editor-flow-copy");
+  const editorActionBarEl = document.getElementById("editor-action-bar");
   const overviewEl = document.getElementById("editor-overview");
   const navEl = document.getElementById("editor-nav");
+  const navSectionEl = document.getElementById("editor-nav-section");
+  const connectionSectionEl = document.getElementById("editor-connection-section");
   const sectionsEl = document.getElementById("editor-sections");
   const feedbackEl = document.getElementById("editor-feedback");
   const loadAllBtn = document.getElementById("load-all");
@@ -304,6 +309,26 @@
   const editorHrefForItem = (item) => `./editor.html?section=${encodeURIComponent(item.slug)}`;
 
   const renderEditorContext = () => {
+    if (chooserMode) {
+      if (editorTitleEl) editorTitleEl.textContent = "Choose What To Edit";
+      if (editorIntroEl) {
+        editorIntroEl.textContent = "Open one page or setting at a time for a simpler editing experience.";
+      }
+      if (editorBackLinkEl) editorBackLinkEl.textContent = "Dashboard";
+      if (editorFlowCopyEl) {
+        editorFlowCopyEl.textContent = "Pick the page or setting you want to update. The editor will then open only that area.";
+      }
+      if (editorActionBarEl) editorActionBarEl.classList.add("hidden");
+      if (navSectionEl) navSectionEl.classList.add("hidden");
+      if (connectionSectionEl) connectionSectionEl.classList.add("hidden");
+      if (editorContextLinksEl) {
+        editorContextLinksEl.innerHTML = `
+          <a href="./editor.html?view=all" class="btn-secondary rounded-full px-4 py-2 text-sm">Open Full Editor</a>
+        `;
+      }
+      return;
+    }
+
     if (selectedContentItem) {
       if (editorTitleEl) editorTitleEl.textContent = `${selectedContentItem.label} Editor`;
       if (editorIntroEl) {
@@ -315,7 +340,11 @@
       }
       if (loadAllBtn) loadAllBtn.textContent = "Load Section";
       if (saveAllBtn) saveAllBtn.textContent = "Save Section";
+      if (editorActionBarEl) editorActionBarEl.classList.remove("hidden");
       if (overviewEl) overviewEl.classList.add("hidden");
+      if (navSectionEl) navSectionEl.classList.remove("hidden");
+      if (connectionSectionEl) connectionSectionEl.classList.add("hidden");
+      if (toggleAdvancedBtn) toggleAdvancedBtn.classList.add("hidden");
       if (editorContextLinksEl) {
         editorContextLinksEl.innerHTML = `
           <a href="./editor.html" class="btn-secondary rounded-full px-4 py-2 text-sm">Open Full Editor</a>
@@ -335,12 +364,30 @@
     }
     if (loadAllBtn) loadAllBtn.textContent = "Load All";
     if (saveAllBtn) saveAllBtn.textContent = "Save All";
+    if (editorActionBarEl) editorActionBarEl.classList.remove("hidden");
     if (overviewEl) overviewEl.classList.remove("hidden");
+    if (navSectionEl) navSectionEl.classList.remove("hidden");
+    if (connectionSectionEl) connectionSectionEl.classList.remove("hidden");
+    if (toggleAdvancedBtn) toggleAdvancedBtn.classList.remove("hidden");
     if (editorContextLinksEl) editorContextLinksEl.innerHTML = "";
   };
 
   const renderOverview = () => {
     if (!overviewEl) return;
+    if (chooserMode) {
+      overviewEl.innerHTML = allContentItems
+        .map(
+          (item) => `
+            <a href="${esc(editorHrefForItem(item))}" class="section-shell block p-5 transition hover:border-amber-200/35 hover:bg-black/30">
+              <p class="text-xs uppercase tracking-[0.3em] text-amber-200">${esc(item.group)}</p>
+              <h2 class="mt-2 font-display text-2xl text-white">${esc(item.label)}</h2>
+              <p class="mt-2 text-sm text-amber-50/80">${esc(item.summary || item.hint)}</p>
+            </a>
+          `,
+        )
+        .join("");
+      return;
+    }
     const grouped = allContentItems.reduce((acc, item) => {
       acc[item.group] = acc[item.group] || [];
       acc[item.group].push(item);
@@ -1185,6 +1232,7 @@
   };
 
   const loadAll = async () => {
+    if (chooserMode) return;
     setFeedback("Loading all sections...");
     let failed = 0;
     let blocked = 0;
@@ -1201,6 +1249,7 @@
   };
 
   const saveAll = async () => {
+    if (chooserMode) return;
     setFeedback("Saving all sections...");
     let failed = 0;
     for (const item of contentItems) {
@@ -1213,6 +1262,11 @@
 
   const renderCards = () => {
     if (!sectionsEl) return;
+    if (chooserMode) {
+      sectionsEl.innerHTML = "";
+      refsByPath.clear();
+      return;
+    }
     sectionsEl.innerHTML = renderCardShell();
     contentItems.forEach((item) => {
       const card = sectionsEl.querySelector(`[data-content-path="${item.path}"]`);
