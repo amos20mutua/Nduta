@@ -1,6 +1,7 @@
 (() => {
-  const contentItems = [
+  const allContentItems = [
     {
+      slug: "homepage",
       label: "Homepage",
       navLabel: "Homepage",
       group: "Pages",
@@ -9,6 +10,7 @@
       summary: "Hero image or video, intro copy, story blocks, and homepage call-to-actions."
     },
     {
+      slug: "events",
       label: "Events",
       navLabel: "Events",
       group: "Pages",
@@ -17,6 +19,7 @@
       summary: "Gatherings, dates, ticket tiers, featured event settings, and event posters."
     },
     {
+      slug: "music",
       label: "Music",
       navLabel: "Music",
       group: "Pages",
@@ -25,6 +28,7 @@
       summary: "Music releases, cover art, lyrics, streaming links, and featured songs."
     },
     {
+      slug: "settings",
       label: "Site Settings",
       navLabel: "Settings",
       group: "Global",
@@ -33,6 +37,7 @@
       summary: "Brand name, contact details, navigation, footer, social links, and shared page settings."
     },
     {
+      slug: "theme",
       label: "Theme",
       navLabel: "Theme",
       group: "Global",
@@ -41,6 +46,7 @@
       summary: "Colors, hero overlay, card styling, and button appearance."
     },
     {
+      slug: "media",
       label: "Media",
       navLabel: "Media",
       group: "Reserved",
@@ -49,10 +55,19 @@
       summary: "Reserved media items and thumbnails. This file is not currently rendered on the public website."
     },
   ];
+  const editorQuery = new URLSearchParams(window.location.search);
+  const requestedSectionSlug = String(editorQuery.get("section") || "").trim().toLowerCase();
+  const selectedContentItem = allContentItems.find((item) => item.slug === requestedSectionSlug) || null;
+  const contentItems = selectedContentItem ? [selectedContentItem] : allContentItems;
 
   const baseUrlInput = document.getElementById("functions-base-url");
   const anonKeyInput = document.getElementById("anon-key");
   const adminKeyInput = document.getElementById("admin-key");
+  const editorTitleEl = document.getElementById("editor-title");
+  const editorIntroEl = document.getElementById("editor-intro");
+  const editorBackLinkEl = document.getElementById("editor-back-link");
+  const editorContextLinksEl = document.getElementById("editor-context-links");
+  const editorFlowCopyEl = document.getElementById("editor-flow-copy");
   const overviewEl = document.getElementById("editor-overview");
   const navEl = document.getElementById("editor-nav");
   const sectionsEl = document.getElementById("editor-sections");
@@ -286,9 +301,47 @@
       .replaceAll("/", "-")
       .replaceAll(".", "-")}`;
 
+  const editorHrefForItem = (item) => `./editor.html?section=${encodeURIComponent(item.slug)}`;
+
+  const renderEditorContext = () => {
+    if (selectedContentItem) {
+      if (editorTitleEl) editorTitleEl.textContent = `${selectedContentItem.label} Editor`;
+      if (editorIntroEl) {
+        editorIntroEl.textContent = `Edit only the ${selectedContentItem.label.toLowerCase()} section on this page. Other areas remain untouched.`;
+      }
+      if (editorBackLinkEl) editorBackLinkEl.textContent = "Dashboard";
+      if (editorFlowCopyEl) {
+        editorFlowCopyEl.textContent = "Editing flow: 1) Load this section 2) Make your changes 3) Save this section when you are ready.";
+      }
+      if (loadAllBtn) loadAllBtn.textContent = "Load Section";
+      if (saveAllBtn) saveAllBtn.textContent = "Save Section";
+      if (overviewEl) overviewEl.classList.add("hidden");
+      if (editorContextLinksEl) {
+        editorContextLinksEl.innerHTML = `
+          <a href="./editor.html" class="btn-secondary rounded-full px-4 py-2 text-sm">Open Full Editor</a>
+          <a href="#editor-nav" class="btn-secondary rounded-full px-4 py-2 text-sm">Switch Section</a>
+        `;
+      }
+      return;
+    }
+
+    if (editorTitleEl) editorTitleEl.textContent = "Website Editor";
+    if (editorIntroEl) {
+      editorIntroEl.textContent = "Update each page section in guided form fields, then save when you are ready.";
+    }
+    if (editorBackLinkEl) editorBackLinkEl.textContent = "Back";
+    if (editorFlowCopyEl) {
+      editorFlowCopyEl.textContent = "Editing flow: 1) Load the latest content 2) Update the page section you need 3) Save that section or save everything together.";
+    }
+    if (loadAllBtn) loadAllBtn.textContent = "Load All";
+    if (saveAllBtn) saveAllBtn.textContent = "Save All";
+    if (overviewEl) overviewEl.classList.remove("hidden");
+    if (editorContextLinksEl) editorContextLinksEl.innerHTML = "";
+  };
+
   const renderOverview = () => {
     if (!overviewEl) return;
-    const grouped = contentItems.reduce((acc, item) => {
+    const grouped = allContentItems.reduce((acc, item) => {
       acc[item.group] = acc[item.group] || [];
       acc[item.group].push(item);
       return acc;
@@ -296,7 +349,7 @@
 
     overviewEl.innerHTML = Object.entries(grouped)
       .map(([group, items]) => {
-        const labels = items.map((item) => item.navLabel || item.label).join(" • ");
+        const labels = items.map((item) => item.navLabel || item.label).join(" · ");
         return `
           <article class="section-shell p-5">
             <p class="text-xs uppercase tracking-[0.3em] text-amber-200">${esc(group)}</p>
@@ -310,10 +363,10 @@
 
   const renderSectionNav = () => {
     if (!navEl) return;
-    navEl.innerHTML = contentItems
+    navEl.innerHTML = allContentItems
       .map(
         (item) => `
-          <a href="#${esc(cardIdForPath(item.path))}" class="btn-secondary rounded-full px-4 py-2 text-xs">
+          <a href="${esc(editorHrefForItem(item))}" class="btn-secondary rounded-full px-4 py-2 text-xs ${selectedContentItem?.slug === item.slug ? "opacity-100" : "opacity-80"}">
             ${esc(item.navLabel || item.label)}
           </a>
         `,
@@ -1217,6 +1270,7 @@
     loadConfig();
     await bootstrapFromSettings();
     saveConfig();
+    renderEditorContext();
     renderOverview();
     renderSectionNav();
     renderCards();

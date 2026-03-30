@@ -32,23 +32,41 @@
         <div>
           <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Website Editing</p>
           <h2 class="mt-2 font-display text-3xl text-white">Content & Page Settings</h2>
-          <p class="mt-2 max-w-2xl text-sm text-amber-50/80">Edit homepage, contact information, events, music, media placeholders, and theme settings in one guided editor.</p>
+          <p class="mt-2 max-w-2xl text-sm text-amber-50/80">Choose the exact page or setting you want to edit. Each option opens its own focused editor so you are not overwhelmed by unrelated fields.</p>
         </div>
-        <a href="./editor.html" class="btn-primary rounded-full px-5 py-2 text-sm">Open Editor</a>
+        <a href="./editor.html" class="btn-primary rounded-full px-5 py-2 text-sm">Open Full Editor</a>
       </div>
-      <div class="mt-5 grid gap-3 sm:grid-cols-3">
-        <div class="rounded-2xl border border-amber-200/15 bg-black/20 p-4">
-          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Homepage</p>
-          <p class="mt-2 text-sm text-amber-50/80">Hero, story section, and about content.</p>
-        </div>
-        <div class="rounded-2xl border border-amber-200/15 bg-black/20 p-4">
-          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Events & Music</p>
-          <p class="mt-2 text-sm text-amber-50/80">Live gatherings, ticket tiers, releases, and links.</p>
-        </div>
-        <div class="rounded-2xl border border-amber-200/15 bg-black/20 p-4">
-          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Settings & Theme</p>
-          <p class="mt-2 text-sm text-amber-50/80">Brand details, contact data, footer, and visual styling.</p>
-        </div>
+      <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <a href="./editor.html?section=homepage" class="rounded-2xl border border-amber-200/15 bg-black/20 p-4 transition hover:border-amber-200/35 hover:bg-black/30">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Page Editor</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Homepage</h3>
+          <p class="mt-2 text-sm text-amber-50/80">Hero, story section, and homepage call-to-actions.</p>
+        </a>
+        <a href="./editor.html?section=events" class="rounded-2xl border border-amber-200/15 bg-black/20 p-4 transition hover:border-amber-200/35 hover:bg-black/30">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Page Editor</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Events</h3>
+          <p class="mt-2 text-sm text-amber-50/80">Gatherings, ticket tiers, dates, and event poster images.</p>
+        </a>
+        <a href="./editor.html?section=music" class="rounded-2xl border border-amber-200/15 bg-black/20 p-4 transition hover:border-amber-200/35 hover:bg-black/30">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Page Editor</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Music</h3>
+          <p class="mt-2 text-sm text-amber-50/80">Songs, cover art, lyrics, streaming links, and featured releases.</p>
+        </a>
+        <a href="./editor.html?section=settings" class="rounded-2xl border border-amber-200/15 bg-black/20 p-4 transition hover:border-amber-200/35 hover:bg-black/30">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Global Settings</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Site Settings</h3>
+          <p class="mt-2 text-sm text-amber-50/80">Brand name, navigation, contact details, footer, and shared page settings.</p>
+        </a>
+        <a href="./editor.html?section=theme" class="rounded-2xl border border-amber-200/15 bg-black/20 p-4 transition hover:border-amber-200/35 hover:bg-black/30">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Global Settings</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Theme</h3>
+          <p class="mt-2 text-sm text-amber-50/80">Colors, card styling, button appearance, and visual presentation.</p>
+        </a>
+        <a href="./editor.html?section=media" class="rounded-2xl border border-amber-200/15 bg-black/20 p-4 transition hover:border-amber-200/35 hover:bg-black/30">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Reserved Content</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Media</h3>
+          <p class="mt-2 text-sm text-amber-50/80">Reserved gallery content kept for later use on the public site.</p>
+        </a>
       </div>
     </section>
 

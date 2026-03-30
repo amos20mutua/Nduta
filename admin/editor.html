@@ -18,15 +18,17 @@
   <main class="mx-auto max-w-6xl px-4 py-10">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="font-display text-4xl text-white">Website Editor</h1>
-        <p class="mt-2 text-sm text-amber-50/80">Update each page section in guided form fields, then save when you are ready.</p>
+        <h1 id="editor-title" class="font-display text-4xl text-white">Website Editor</h1>
+        <p id="editor-intro" class="mt-2 text-sm text-amber-50/80">Update each page section in guided form fields, then save when you are ready.</p>
       </div>
-      <a href="./index.html" class="btn-secondary rounded-full px-4 py-2 text-sm">Back</a>
+      <a id="editor-back-link" href="./index.html" class="btn-secondary rounded-full px-4 py-2 text-sm">Back</a>
     </div>
+
+    <div id="editor-context-links" class="mt-4 flex flex-wrap gap-2"></div>
 
     <section class="section-shell mt-4 p-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-amber-50/85">Editing flow: 1) Load the latest content 2) Update the page section you need 3) Save that section or save everything together.</p>
+        <p id="editor-flow-copy" class="text-sm text-amber-50/85">Editing flow: 1) Load the latest content 2) Update the page section you need 3) Save that section or save everything together.</p>
         <div class="flex flex-wrap gap-2">
           <button id="load-all" class="btn-secondary rounded-full px-4 py-2 text-sm">Load All</button>
           <button id="save-all" class="btn-primary rounded-full px-4 py-2 text-sm">Save All</button>
