@@ -301,7 +301,7 @@
   SiteApp.ready
     .then(async (settings) => {
       const [siteSettings, payload] = await Promise.all([
-        SiteApp.loadJson('/content/settings.json').catch(() => settings || {}),
+        Promise.resolve(settings || {}),
         SiteApp.loadJson('/content/events.json')
       ]);
       const apiConfig = siteSettings.api || {};

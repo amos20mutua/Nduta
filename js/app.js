@@ -6,7 +6,10 @@
     menuOpen: false,
     focusables: [],
     lastFocused: null,
-    reduceMotion: false
+    reduceMotion: false,
+    contentStore: new Map(),
+    inflightContent: new Map(),
+    initialBundlePromise: null
   };
   const CONTENT_CACHE_TTL_MS = 5 * 60 * 1000;
   const CONTENT_API_TIMEOUT_MS = 7000;
@@ -89,10 +92,26 @@
 
   const cacheKeyForPath = (path) => `${CONTENT_CACHE_PREFIX}${path}`;
 
+  const rememberContent = (path, payload) => {
+    if (!path) return;
+    state.contentStore.set(path, {
+      payload,
+      ts: Date.now()
+    });
+  };
+
+  const readRememberedContent = (path) => {
+    if (!path) return null;
+    const entry = state.contentStore.get(path);
+    return entry ? entry.payload : null;
+  };
+
   const clearContentCache = (path = '') => {
     try {
       if (path) {
         localStorage.removeItem(cacheKeyForPath(path));
+        state.contentStore.delete(path);
+        state.inflightContent.delete(path);
         return;
       }
       const keys = [];
@@ -101,6 +120,8 @@
         if (key?.startsWith(CONTENT_CACHE_PREFIX)) keys.push(key);
       }
       keys.forEach((key) => localStorage.removeItem(key));
+      state.contentStore.clear();
+      state.inflightContent.clear();
     } catch {}
   };
 
@@ -126,6 +147,7 @@
 
   const writeContentCache = (path, payload) => {
     try {
+      rememberContent(path, payload);
       localStorage.setItem(cacheKeyForPath(path), JSON.stringify({ ts: Date.now(), payload }));
       setCookie('essy_cache_warm', '1', 7 * 24 * 60 * 60);
     } catch {}
@@ -167,32 +189,101 @@
     return data?.payload ?? null;
   };
 
-  const loadJson = async (path) => {
-    try {
-      const isContent = isContentPath(path);
-      const api = getApiConfig();
-      const hasApi = isContent && hasConfiguredContentApi(api);
+  const fetchContentBundleViaApi = async (paths, apiOverride = getApiConfig()) => {
+    const requested = Array.from(new Set((Array.isArray(paths) ? paths : []).filter(isContentPath)));
+    if (!requested.length) return [];
 
-      if (hasApi) {
-        try {
-          const apiPayload = await fetchContentViaApi(path, api);
-          if (apiPayload) {
-            writeContentCache(path, apiPayload);
-            return apiPayload;
-          }
-        } catch {}
-        const cached = readContentCache(path, { allowExpired: true });
-        if (cached?.payload !== null) {
-          return cached.payload;
-        }
-      }
-      const localPayload = await fetchWithRetry(path, (res) => res.json());
-      if (isContent && !hasApi) writeContentCache(path, localPayload);
-      return localPayload;
-    } catch (error) {
-      showServerHint();
-      throw error;
+    const api = apiOverride || {};
+    const base = getFunctionsBaseUrl(api);
+    if (base === null) return [];
+
+    const headers = {};
+    const anonKey = String(api?.supabaseAnonKey || '').trim();
+    if (anonKey) {
+      headers.apikey = anonKey;
+      headers.Authorization = `Bearer ${anonKey}`;
     }
+
+    const url = `${base}/content-bundle?paths=${encodeURIComponent(requested.join(','))}`;
+    const response = await fetchWithTimeout(url, { cache: 'no-store', headers }, CONTENT_API_TIMEOUT_MS);
+    if (!response.ok) return [];
+    const data = await response.json().catch(() => ({}));
+    return Array.isArray(data?.items) ? data.items : [];
+  };
+
+  const getInitialContentPaths = () => {
+    const path = currentPath();
+    const paths = ['/content/settings.json', '/content/theme.json'];
+    if (path === '/index.html') paths.push('/content/homepage.json');
+    if (path === '/events.html') paths.push('/content/events.json');
+    if (path === '/music.html') paths.push('/content/music.json');
+    return paths;
+  };
+
+  const primeInitialBundle = async () => {
+    if (state.initialBundlePromise) return state.initialBundlePromise;
+
+    const api = getApiConfig();
+    if (!hasConfiguredContentApi(api)) return null;
+
+    const paths = getInitialContentPaths();
+    state.initialBundlePromise = (async () => {
+      try {
+        const items = await fetchContentBundleViaApi(paths, api);
+        items.forEach((item) => {
+          if (!item?.path) return;
+          if (item.payload === undefined || item.payload === null) return;
+          writeContentCache(item.path, item.payload);
+        });
+        return items;
+      } catch {
+        return null;
+      }
+    })();
+
+    return state.initialBundlePromise;
+  };
+
+  const loadJson = async (path) => {
+    const remembered = readRememberedContent(path);
+    if (remembered !== null) return remembered;
+
+    const inflight = state.inflightContent.get(path);
+    if (inflight) return inflight;
+
+    const task = (async () => {
+      try {
+        const isContent = isContentPath(path);
+        const api = getApiConfig();
+        const hasApi = isContent && hasConfiguredContentApi(api);
+
+        if (hasApi) {
+          try {
+            const apiPayload = await fetchContentViaApi(path, api);
+            if (apiPayload !== null && apiPayload !== undefined) {
+              writeContentCache(path, apiPayload);
+              return apiPayload;
+            }
+          } catch {}
+          const cached = readContentCache(path, { allowExpired: true });
+          if (cached?.payload !== null) {
+            writeContentCache(path, cached.payload);
+            return cached.payload;
+          }
+        }
+        const localPayload = await fetchWithRetry(path, (res) => res.json());
+        if (isContent) writeContentCache(path, localPayload);
+        return localPayload;
+      } catch (error) {
+        showServerHint();
+        throw error;
+      } finally {
+        state.inflightContent.delete(path);
+      }
+    })();
+
+    state.inflightContent.set(path, task);
+    return task;
   };
 
   const formatDate = (isoDate) => {
@@ -560,37 +651,44 @@
 
   const loadSettings = async () => {
     if (state.settings) return state.settings;
-    const cacheEntry = readContentCache('/content/settings.json', { allowExpired: true });
-    const localSettings = await fetchWithRetry('/content/settings.json', (res) => res.json());
-    const apiCandidate = localSettings?.api || cacheEntry?.payload?.api || {};
+    await primeInitialBundle();
 
-    try {
-      const remoteSettings = await fetchContentViaApi('/content/settings.json', apiCandidate);
-      if (remoteSettings && typeof remoteSettings === 'object') {
-        state.settings = remoteSettings;
-        writeContentCache('/content/settings.json', remoteSettings);
-        return state.settings;
-      }
-    } catch {}
-
-    if (cacheEntry?.payload && typeof cacheEntry.payload === 'object') {
-      state.settings = cacheEntry.payload;
+    const bundled = readRememberedContent('/content/settings.json');
+    if (bundled && typeof bundled === 'object') {
+      state.settings = bundled;
       return state.settings;
     }
 
+    const cacheEntry = readContentCache('/content/settings.json', { allowExpired: true });
+    if (cacheEntry?.payload && typeof cacheEntry.payload === 'object') {
+      state.settings = cacheEntry.payload;
+      rememberContent('/content/settings.json', cacheEntry.payload);
+      return state.settings;
+    }
+
+    const localSettings = await fetchWithRetry('/content/settings.json', (res) => res.json());
     state.settings = localSettings;
-    if (!hasConfiguredContentApi(localSettings?.api)) writeContentCache('/content/settings.json', localSettings);
+    writeContentCache('/content/settings.json', localSettings);
     return state.settings;
   };
 
   const loadTheme = async () => {
     if (state.theme) return state.theme;
+    await primeInitialBundle();
+
+    const bundled = readRememberedContent('/content/theme.json');
+    if (bundled && typeof bundled === 'object') {
+      state.theme = bundled;
+      return state.theme;
+    }
+
     state.theme = await loadJson('/content/theme.json').catch(() => ({ accent: '#D4AF37' }));
     return state.theme;
   };
 
   const init = async () => {
     state.reduceMotion = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    await primeInitialBundle();
     const [settings, theme] = await Promise.all([loadSettings(), loadTheme()]);
     applyTheme(theme);
     renderHeader(settings);

@@ -1,20 +1,65 @@
 (() => {
   const contentItems = [
-    { label: "Site Settings", path: "/content/settings.json", hint: "Branding, contact details, navigation, footer, and page copy." },
-    { label: "Homepage", path: "/content/homepage.json", hint: "Hero and story content shown on the public home page." },
-    { label: "Events", path: "/content/events.json", hint: "Events, dates, ticket settings, and pricing. Only future-dated events show on the public page." },
-    { label: "Music", path: "/content/music.json", hint: "Songs, cover images, release dates, lyrics, and streaming links." },
-    { label: "Media", path: "/content/media.json", hint: "Reserved gallery content. The current public pages do not display this file." },
-    { label: "Theme", path: "/content/theme.json", hint: "Accent colors and style classes." },
+    {
+      label: "Homepage",
+      navLabel: "Homepage",
+      group: "Pages",
+      path: "/content/homepage.json",
+      hint: "Hero and story content shown on the public home page.",
+      summary: "Hero image or video, intro copy, story blocks, and homepage call-to-actions."
+    },
+    {
+      label: "Events",
+      navLabel: "Events",
+      group: "Pages",
+      path: "/content/events.json",
+      hint: "Events, dates, ticket settings, and pricing. Only future-dated events show on the public page.",
+      summary: "Gatherings, dates, ticket tiers, featured event settings, and event posters."
+    },
+    {
+      label: "Music",
+      navLabel: "Music",
+      group: "Pages",
+      path: "/content/music.json",
+      hint: "Songs, cover images, release dates, lyrics, and streaming links.",
+      summary: "Music releases, cover art, lyrics, streaming links, and featured songs."
+    },
+    {
+      label: "Site Settings",
+      navLabel: "Settings",
+      group: "Global",
+      path: "/content/settings.json",
+      hint: "Branding, contact details, navigation, footer, and page copy.",
+      summary: "Brand name, contact details, navigation, footer, social links, and shared page settings."
+    },
+    {
+      label: "Theme",
+      navLabel: "Theme",
+      group: "Global",
+      path: "/content/theme.json",
+      hint: "Accent colors and style classes.",
+      summary: "Colors, hero overlay, card styling, and button appearance."
+    },
+    {
+      label: "Media",
+      navLabel: "Media",
+      group: "Reserved",
+      path: "/content/media.json",
+      hint: "Reserved gallery content. The current public pages do not display this file.",
+      summary: "Reserved media items and thumbnails. This file is not currently rendered on the public website."
+    },
   ];
 
   const baseUrlInput = document.getElementById("functions-base-url");
   const anonKeyInput = document.getElementById("anon-key");
   const adminKeyInput = document.getElementById("admin-key");
+  const overviewEl = document.getElementById("editor-overview");
+  const navEl = document.getElementById("editor-nav");
   const sectionsEl = document.getElementById("editor-sections");
   const feedbackEl = document.getElementById("editor-feedback");
   const loadAllBtn = document.getElementById("load-all");
   const saveAllBtn = document.getElementById("save-all");
+  const toggleAdvancedBtn = document.getElementById("toggle-advanced-json");
 
   const settingsStorageKey = "essy_admin_editor_config_v2";
   const contentCachePrefix = "essy_content_cache_v1:";
@@ -30,6 +75,7 @@
   const refsByPath = new Map();
   const payloadByPath = new Map();
   const contentStateByPath = new Map();
+  let advancedJsonVisible = false;
 
   const esc = (value) =>
     String(value ?? "")
@@ -234,27 +280,73 @@
       .map((x) => x.trim())
       .filter(Boolean);
 
+  const cardIdForPath = (path) =>
+    `editor-${String(path || "")
+      .replace(/^\/+/, "")
+      .replaceAll("/", "-")
+      .replaceAll(".", "-")}`;
+
+  const renderOverview = () => {
+    if (!overviewEl) return;
+    const grouped = contentItems.reduce((acc, item) => {
+      acc[item.group] = acc[item.group] || [];
+      acc[item.group].push(item);
+      return acc;
+    }, {});
+
+    overviewEl.innerHTML = Object.entries(grouped)
+      .map(([group, items]) => {
+        const labels = items.map((item) => item.navLabel || item.label).join(" • ");
+        return `
+          <article class="section-shell p-5">
+            <p class="text-xs uppercase tracking-[0.3em] text-amber-200">${esc(group)}</p>
+            <h2 class="mt-2 font-display text-2xl text-white">${esc(group === "Pages" ? "Public Pages" : group === "Global" ? "Shared Site Settings" : "Reserved Content")}</h2>
+            <p class="mt-2 text-sm text-amber-50/80">${esc(labels)}</p>
+          </article>
+        `;
+      })
+      .join("");
+  };
+
+  const renderSectionNav = () => {
+    if (!navEl) return;
+    navEl.innerHTML = contentItems
+      .map(
+        (item) => `
+          <a href="#${esc(cardIdForPath(item.path))}" class="btn-secondary rounded-full px-4 py-2 text-xs">
+            ${esc(item.navLabel || item.label)}
+          </a>
+        `,
+      )
+      .join("");
+  };
+
   const renderCardShell = () =>
     contentItems
       .map(
         (item) => `
-      <article class="section-shell p-4" data-content-path="${item.path}">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 class="font-display text-2xl text-white">${esc(item.label)}</h2>
-            <p class="mt-1 text-xs text-amber-100/75">${esc(item.hint)}</p>
+      <article id="${esc(cardIdForPath(item.path))}" class="section-shell scroll-mt-24 p-5" data-content-path="${item.path}">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="max-w-3xl">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="rounded-full border border-amber-200/20 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-amber-200">${esc(item.group)}</span>
+            </div>
+            <h2 class="mt-3 font-display text-3xl text-white">${esc(item.label)}</h2>
+            <p class="mt-2 text-sm text-amber-50/80">${esc(item.summary || item.hint)}</p>
+            <p class="mt-2 text-xs text-amber-100/70">${esc(item.hint)}</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button type="button" data-reload="true" class="btn-secondary rounded-full px-4 py-2 text-xs">Reload</button>
-            <button type="button" data-save="true" class="btn-primary rounded-full px-4 py-2 text-xs">Save</button>
+            <button type="button" data-reload="true" class="btn-secondary rounded-full px-4 py-2 text-xs">Reload Section</button>
+            <button type="button" data-save="true" class="btn-primary rounded-full px-4 py-2 text-xs">Save Section</button>
           </div>
         </div>
-        <div class="mt-4 grid gap-3" data-easy="true"></div>
-        <details class="mt-4">
-          <summary class="cursor-pointer text-xs uppercase tracking-wide text-amber-200">Advanced JSON</summary>
+        <div class="mt-5 grid gap-3" data-easy="true"></div>
+        <details class="mt-5 hidden" data-advanced-json="true">
+          <summary class="cursor-pointer text-xs uppercase tracking-[0.3em] text-amber-200">Advanced JSON</summary>
+          <p class="mt-2 text-xs text-amber-100/65">Use this only when you need to edit raw structured content directly.</p>
           <textarea data-raw="true" rows="10" class="mt-2 w-full rounded-md border border-amber-200/25 bg-black/35 p-3 text-xs text-amber-50"></textarea>
         </details>
-        <p data-status="true" class="mt-3 text-xs text-amber-100/75"></p>
+        <p data-status="true" class="mt-4 text-xs text-amber-100/75"></p>
       </article>
     `,
       )
@@ -1074,6 +1166,7 @@
       if (!card) return;
       refsByPath.set(item.path, {
         easy: card.querySelector("[data-easy='true']"),
+        details: card.querySelector("[data-advanced-json='true']"),
         raw: card.querySelector("[data-raw='true']"),
         status: card.querySelector("[data-status='true']"),
         reloadBtn: card.querySelector("[data-reload='true']"),
@@ -1095,6 +1188,15 @@
       saveConfig();
       saveAll().catch((e) => setFeedback(e?.message || "Save failed", false));
     });
+    toggleAdvancedBtn?.addEventListener("click", () => {
+      advancedJsonVisible = !advancedJsonVisible;
+      toggleAdvancedBtn.textContent = advancedJsonVisible ? "Hide Advanced JSON" : "Show Advanced JSON";
+      refsByPath.forEach((refs) => {
+        if (!refs?.details) return;
+        refs.details.classList.toggle("hidden", !advancedJsonVisible);
+        refs.details.open = advancedJsonVisible;
+      });
+    });
     window.addEventListener("admin-session-ready", () => {
       if (adminKeyInput) adminKeyInput.value = "";
       saveConfig();
@@ -1115,6 +1217,8 @@
     loadConfig();
     await bootstrapFromSettings();
     saveConfig();
+    renderOverview();
+    renderSectionNav();
     renderCards();
     bindCardActions();
     bindTopActions();

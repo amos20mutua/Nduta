@@ -15,31 +15,58 @@
   </style>
 </head>
 <body class="page-ready">
-  <main class="mx-auto max-w-5xl px-4 py-10">
+  <main class="mx-auto max-w-6xl px-4 py-10">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="font-display text-4xl text-white">Website Editor</h1>
-        <p class="mt-2 text-sm text-amber-50/80">Update each section in clear form fields, then save when you are ready.</p>
+        <p class="mt-2 text-sm text-amber-50/80">Update each page section in guided form fields, then save when you are ready.</p>
       </div>
       <a href="./index.html" class="btn-secondary rounded-full px-4 py-2 text-sm">Back</a>
     </div>
 
     <section class="section-shell mt-4 p-4">
-      <p class="text-sm text-amber-50/85">Quick steps: 1) Load the latest content 2) Update fields and upload images where needed 3) Save one section at a time or save everything together.</p>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-amber-50/85">Editing flow: 1) Load the latest content 2) Update the page section you need 3) Save that section or save everything together.</p>
+        <div class="flex flex-wrap gap-2">
+          <button id="load-all" class="btn-secondary rounded-full px-4 py-2 text-sm">Load All</button>
+          <button id="save-all" class="btn-primary rounded-full px-4 py-2 text-sm">Save All</button>
+          <button id="toggle-advanced-json" class="btn-secondary rounded-full px-4 py-2 text-sm">Show Advanced JSON</button>
+        </div>
+      </div>
+      <p id="editor-feedback" class="mt-3 text-sm text-amber-100/80"></p>
+    </section>
+
+    <section id="editor-overview" class="mt-6 grid gap-4 md:grid-cols-3"></section>
+
+    <section class="section-shell mt-6 p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Quick Navigation</p>
+          <h2 class="mt-2 font-display text-2xl text-white">Page Sections</h2>
+        </div>
+        <p class="max-w-xl text-sm text-amber-50/75">Jump directly to the page or settings area you want to edit.</p>
+      </div>
+      <div id="editor-nav" class="mt-4 flex flex-wrap gap-2"></div>
     </section>
 
     <section class="section-shell mt-6 p-4">
-      <label class="text-xs uppercase tracking-wide text-amber-200" for="functions-base-url">Functions Base URL (optional)</label>
-      <input id="functions-base-url" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Leave blank for the current Netlify site" />
-      <label class="mt-3 block text-xs uppercase tracking-wide text-amber-200" for="anon-key">Public API Key (optional)</label>
-      <input id="anon-key" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Only fill this in if the site uses a public browser key" />
-      <label class="mt-3 block text-xs uppercase tracking-wide text-amber-200" for="admin-key">Backup Access Key (optional)</label>
-      <input id="admin-key" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Usually not needed when signed in with username and password" />
-      <div class="mt-3 flex flex-wrap gap-2">
-        <button id="load-all" class="btn-secondary rounded-full px-4 py-2 text-sm">Load All</button>
-        <button id="save-all" class="btn-primary rounded-full px-4 py-2 text-sm">Save All</button>
-      </div>
-      <p id="editor-feedback" class="mt-3 text-sm text-amber-100/80"></p>
+      <details>
+        <summary class="cursor-pointer text-sm font-semibold uppercase tracking-[0.3em] text-amber-200">Connection & access settings</summary>
+        <div class="mt-4 grid gap-4 md:grid-cols-3">
+          <label class="block">
+            <span class="text-xs uppercase tracking-wide text-amber-200">Functions Base URL (optional)</span>
+            <input id="functions-base-url" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Leave blank for the current Netlify site" />
+          </label>
+          <label class="block">
+            <span class="text-xs uppercase tracking-wide text-amber-200">Public API Key (optional)</span>
+            <input id="anon-key" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Only fill this in if the site uses a public browser key" />
+          </label>
+          <label class="block">
+            <span class="text-xs uppercase tracking-wide text-amber-200">Backup Access Key (optional)</span>
+            <input id="admin-key" class="mt-2 w-full rounded-lg border border-amber-200/30 bg-black/30 px-3 py-2 text-white" placeholder="Usually not needed when signed in with username and password" />
+          </label>
+        </div>
+      </details>
     </section>
 
     <section id="editor-sections" class="mt-6 grid gap-4"></section>

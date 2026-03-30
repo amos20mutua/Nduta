@@ -42,6 +42,59 @@ async function getContent(contentPath) {
   }
 }
 
+async function getContents(contentPaths = []) {
+  const requested = Array.from(
+    new Set(
+      (Array.isArray(contentPaths) ? contentPaths : [])
+        .map((item) => String(item || '').trim())
+        .filter((item) => isAllowedContentPath(item))
+    )
+  );
+
+  if (!requested.length) return [];
+
+  const supabase = getSupabaseAdmin();
+  const results = new Map();
+  const { data } = await supabase
+    .from('site_content')
+    .select('path,payload,updated_at')
+    .in('path', requested);
+
+  (Array.isArray(data) ? data : []).forEach((row) => {
+    if (!row?.path || !row?.payload) return;
+    results.set(row.path, {
+      path: row.path,
+      payload: row.payload,
+      updatedAt: row.updated_at || null,
+      source: 'db'
+    });
+  });
+
+  await Promise.all(
+    requested.map(async (contentPath) => {
+      if (results.has(contentPath)) return;
+      try {
+        const payload = await readStaticContent(contentPath);
+        results.set(contentPath, {
+          path: contentPath,
+          payload,
+          updatedAt: null,
+          source: 'static'
+        });
+      } catch {
+        results.set(contentPath, {
+          path: contentPath,
+          payload: null,
+          updatedAt: null,
+          source: 'none'
+        });
+      }
+    })
+  );
+
+  return requested.map((contentPath) => results.get(contentPath)).filter(Boolean);
+}
+
 async function upsertContent(contentPath, payload) {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('site_content').upsert({
@@ -52,4 +105,4 @@ async function upsertContent(contentPath, payload) {
   if (error) throw error;
 }
 
-module.exports = { isAllowedContentPath, readStaticContent, getContent, upsertContent };
+module.exports = { isAllowedContentPath, readStaticContent, getContent, getContents, upsertContent };

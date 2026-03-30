@@ -15,27 +15,69 @@
   </style>
 </head>
 <body class="page-ready">
-  <main class="mx-auto max-w-3xl px-4 py-10">
-    <h1 class="font-display text-4xl text-white">Admin Dashboard</h1>
-    <p class="mt-2 text-sm text-amber-50/80">Sign in with the admin username and password configured for this site.</p>
+  <main class="mx-auto max-w-5xl px-4 py-10">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Admin</p>
+        <h1 class="font-display text-4xl text-white">Dashboard</h1>
+        <p class="mt-2 max-w-2xl text-sm text-amber-50/80">Manage the public website, event ticketing, and visitor requests from one place.</p>
+      </div>
+      <div class="section-shell px-4 py-3 text-xs text-amber-100/80">
+        Start with the website editor for page content, then use the tools below for day-to-day operations.
+      </div>
+    </div>
 
-    <section class="mt-6 grid gap-4 sm:grid-cols-2">
-      <a href="./editor.html" class="section-shell block p-5 sm:col-span-2">
-        <h2 class="font-display text-2xl text-white">Website Content Editor</h2>
-        <p class="mt-2 text-sm text-amber-50/80">Edit homepage, events, music, media, settings, and theme from one screen.</p>
-      </a>
-      <a href="../tickets-dashboard.html" class="section-shell block p-5">
-        <h2 class="font-display text-2xl text-white">Tickets Dashboard</h2>
-        <p class="mt-2 text-sm text-amber-50/80">View issued tickets, scan logs, and export CSV.</p>
-      </a>
-      <a href="../inquiries-dashboard.html" class="section-shell block p-5">
-        <h2 class="font-display text-2xl text-white">Booking Requests</h2>
-        <p class="mt-2 text-sm text-amber-50/80">Review website contact submissions and track follow-up.</p>
-      </a>
-      <a href="../scan.html" class="section-shell block p-5">
-        <h2 class="font-display text-2xl text-white">Ticket Scanner</h2>
-        <p class="mt-2 text-sm text-amber-50/80">Validate QR tickets and check attendees in.</p>
-      </a>
+    <section class="section-shell mt-6 p-5">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Website Editing</p>
+          <h2 class="mt-2 font-display text-3xl text-white">Content & Page Settings</h2>
+          <p class="mt-2 max-w-2xl text-sm text-amber-50/80">Edit homepage, contact information, events, music, media placeholders, and theme settings in one guided editor.</p>
+        </div>
+        <a href="./editor.html" class="btn-primary rounded-full px-5 py-2 text-sm">Open Editor</a>
+      </div>
+      <div class="mt-5 grid gap-3 sm:grid-cols-3">
+        <div class="rounded-2xl border border-amber-200/15 bg-black/20 p-4">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Homepage</p>
+          <p class="mt-2 text-sm text-amber-50/80">Hero, story section, and about content.</p>
+        </div>
+        <div class="rounded-2xl border border-amber-200/15 bg-black/20 p-4">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Events & Music</p>
+          <p class="mt-2 text-sm text-amber-50/80">Live gatherings, ticket tiers, releases, and links.</p>
+        </div>
+        <div class="rounded-2xl border border-amber-200/15 bg-black/20 p-4">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Settings & Theme</p>
+          <p class="mt-2 text-sm text-amber-50/80">Brand details, contact data, footer, and visual styling.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Operations</p>
+          <h2 class="mt-2 font-display text-3xl text-white">Live Tools</h2>
+        </div>
+        <p class="max-w-xl text-right text-sm text-amber-50/70">Use these tools to manage attendees, issued tickets, and incoming booking requests.</p>
+      </div>
+
+      <div class="mt-4 grid gap-4 md:grid-cols-3">
+        <a href="../tickets-dashboard.html" class="section-shell block p-5">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Ticketing</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Tickets Dashboard</h3>
+          <p class="mt-2 text-sm text-amber-50/80">View issued tickets, scan activity, and export records.</p>
+        </a>
+        <a href="../scan.html" class="section-shell block p-5">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Check-in</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Ticket Scanner</h3>
+          <p class="mt-2 text-sm text-amber-50/80">Validate QR tickets and check guests in at the venue.</p>
+        </a>
+        <a href="../inquiries-dashboard.html" class="section-shell block p-5">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-200">Messages</p>
+          <h3 class="mt-2 font-display text-2xl text-white">Booking Requests</h3>
+          <p class="mt-2 text-sm text-amber-50/80">Review contact submissions and keep track of follow-up.</p>
+        </a>
+      </div>
     </section>
   </main>
 </body>

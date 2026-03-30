@@ -47,6 +47,11 @@
   status = 200
 
 [[redirects]]
+  from = "/content-bundle"
+  to = "/.netlify/functions/content-bundle"
+  status = 200
+
+[[redirects]]
   from = "/content-upsert"
   to = "/.netlify/functions/content-upsert"
   status = 200

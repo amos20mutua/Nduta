@@ -77,11 +77,9 @@
   renderSkeletons();
 
   SiteApp.ready
-    .then(async () => {
-      const [settings, payload] = await Promise.all([
-        SiteApp.loadJson('/content/settings.json').catch(() => ({})),
-        SiteApp.loadJson('/content/music.json')
-      ]);
+    .then(async (siteSettings) => {
+      const payload = await SiteApp.loadJson('/content/music.json');
+      const settings = siteSettings || {};
 
       const page = settings.musicPage || {};
       if (eyebrowEl) eyebrowEl.textContent = page.eyebrow || 'Music';
