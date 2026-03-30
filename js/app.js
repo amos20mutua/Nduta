@@ -365,8 +365,7 @@
       </header>
       <div id="mobile-menu-overlay" class="fixed inset-0 z-40 hidden bg-black/65" aria-hidden="true"></div>
       <aside id="mobile-menu" class="mobile-drawer fixed right-0 top-0 z-50 h-screen w-[84%] max-w-sm bg-[#10070c] p-6 shadow-2xl transition-transform duration-300" aria-hidden="true" tabindex="-1">
-        <div class="flex items-center justify-between border-b border-amber-200/20 pb-4">
-          <a href="${resolvePath('/index.html')}" class="wordmark-link" data-menu-close="true">${wordmarkHtml(settings.logoText || settings.siteName || settings.artistName)}</a>
+        <div class="flex items-center justify-end border-b border-amber-200/20 pb-4">
           <button id="mobile-menu-close" type="button" class="rounded-md border border-amber-200/30 p-2 text-amber-100" aria-label="Close menu">
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.22 4.22a.75.75 0 011.06 0L10 8.94l4.72-4.72a.75.75 0 111.06 1.06L11.06 10l4.72 4.72a.75.75 0 11-1.06 1.06L10 11.06l-4.72 4.72a.75.75 0 01-1.06-1.06L8.94 10 4.22 5.28a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
           </button>
