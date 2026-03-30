@@ -321,11 +321,7 @@
       if (editorActionBarEl) editorActionBarEl.classList.add("hidden");
       if (navSectionEl) navSectionEl.classList.add("hidden");
       if (connectionSectionEl) connectionSectionEl.classList.add("hidden");
-      if (editorContextLinksEl) {
-        editorContextLinksEl.innerHTML = `
-          <a href="./editor.html?view=all" class="btn-secondary rounded-full px-4 py-2 text-sm">Open Full Editor</a>
-        `;
-      }
+      if (editorContextLinksEl) editorContextLinksEl.innerHTML = "";
       return;
     }
 
@@ -347,7 +343,6 @@
       if (toggleAdvancedBtn) toggleAdvancedBtn.classList.add("hidden");
       if (editorContextLinksEl) {
         editorContextLinksEl.innerHTML = `
-          <a href="./editor.html" class="btn-secondary rounded-full px-4 py-2 text-sm">Open Full Editor</a>
           <a href="#editor-nav" class="btn-secondary rounded-full px-4 py-2 text-sm">Switch Section</a>
         `;
       }

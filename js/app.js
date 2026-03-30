@@ -48,7 +48,7 @@
     if (state.loadErrorShown) return;
     state.loadErrorShown = true;
     const wrap = document.createElement('div');
-    wrap.className = 'fixed bottom-20 left-1/2 z-[90] w-[95%] max-w-xl -translate-x-1/2 rounded-xl border border-amber-200/30 bg-[#2b2225] px-4 py-3 text-sm text-amber-50 shadow-lg';
+    wrap.className = 'site-preview-hint';
     wrap.setAttribute('role', 'alert');
     wrap.innerHTML = 'Content could not be loaded in this preview. Open the site through its local server, for example <code>npx serve</code>, or use the deployed site.';
     document.body.appendChild(wrap);
@@ -77,18 +77,6 @@
   const isContentPath = (path) => typeof path === 'string' && path.startsWith('/content/') && path.endsWith('.json');
 
   const getApiConfig = () => state.settings?.api || {};
-
-  const setCookie = (name, value, maxAgeSeconds = 86400) => {
-    const encoded = encodeURIComponent(String(value ?? ''));
-    document.cookie = `${name}=${encoded}; Max-Age=${Math.max(0, Number(maxAgeSeconds) || 0)}; Path=/; SameSite=Lax`;
-  };
-
-  const getCookie = (name) => {
-    const needle = `${name}=`;
-    const match = document.cookie.split(';').map((part) => part.trim()).find((part) => part.startsWith(needle));
-    if (!match) return '';
-    return decodeURIComponent(match.slice(needle.length));
-  };
 
   const cacheKeyForPath = (path) => `${CONTENT_CACHE_PREFIX}${path}`;
 
@@ -149,7 +137,6 @@
     try {
       rememberContent(path, payload);
       localStorage.setItem(cacheKeyForPath(path), JSON.stringify({ ts: Date.now(), payload }));
-      setCookie('essy_cache_warm', '1', 7 * 24 * 60 * 60);
     } catch {}
   };
 
@@ -473,15 +460,15 @@
           <div class="site-footer-grid border-b border-amber-200/15 pb-6">
             <section>
               <a href="${resolvePath('/index.html')}" class="wordmark-link" aria-label="${escapeHtml(settings.siteName || settings.artistName || 'Site')} home">${wordmarkHtml(settings.logoText || settings.siteName || settings.artistName)}</a>
-              <p class="mt-2 text-sm text-amber-100/75">${escapeHtml(settings.tagline || 'Worship ministry rooted in prayer and Scripture.')}</p>
-              <p class="mt-1 text-xs text-amber-100/60">${escapeHtml(settings.location || '')}</p>
+              <p class="site-footer-copy mt-2 text-sm">${escapeHtml(settings.tagline || 'Worship ministry rooted in prayer and Scripture.')}</p>
+              <p class="site-footer-location mt-1 text-xs">${escapeHtml(settings.location || '')}</p>
             </section>
             <section>
-              <p class="text-xs uppercase tracking-[0.16em] text-amber-200">Follow</p>
-              <div class="mt-3 flex flex-wrap gap-3">${social || '<p class="text-xs text-amber-100/65">Add social links in settings.</p>'}</div>
+              <p class="footer-section-label text-xs uppercase tracking-[0.16em]">Follow</p>
+              <div class="mt-3 flex flex-wrap gap-3">${social || '<p class="site-footer-location text-xs">Add social links in settings.</p>'}</div>
             </section>
           </div>
-          <div class="pt-4 text-center text-xs text-amber-100/70">
+          <div class="site-footer-legal pt-4 text-center text-xs">
             <p>&copy; <span id="footer-year"></span> ${escapeHtml(settings.siteName || settings.artistName || 'Site')}. ${escapeHtml(settings?.footer?.legalText || 'All rights reserved.')}</p>
           </div>
         </div>
