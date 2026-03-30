@@ -1,15 +1,13 @@
 (() => {
-  const upcomingListEl = document.getElementById('events-upcoming-list');
-  const recentSectionEl = document.getElementById('recent-events-section');
-  const recentListEl = document.getElementById('events-recent-list');
+  const listEl = document.getElementById('events-list');
   const eyebrowEl = document.getElementById('events-eyebrow');
   const titleEl = document.getElementById('events-title');
   const subtitleEl = document.getElementById('events-subtitle');
   const tagsEl = document.getElementById('events-tags');
 
   const renderSkeletons = () => {
-    if (!upcomingListEl) return;
-    upcomingListEl.innerHTML = Array.from({ length: 2 }).map(() => `
+    if (!listEl) return;
+    listEl.innerHTML = Array.from({ length: 2 }).map(() => `
       <article class="skeleton-card">
         <div class="loading-skeleton skeleton-image"></div>
         <div class="loading-skeleton skeleton-line wide"></div>
@@ -23,22 +21,16 @@
     return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   };
 
-  const parseEventDay = (isoDate) => new Date(`${isoDate}T00:00:00`).getTime();
-
   const isUpcoming = (isoDate) => {
-    const ts = parseEventDay(isoDate);
+    const ts = new Date(`${isoDate}T00:00:00`).getTime();
     if (Number.isNaN(ts)) return false;
     return ts >= startOfToday();
   };
 
-  const eventBadge = (date, past = false) => {
+  const eventBadge = (date) => {
     const today = startOfToday();
-    const eventDay = parseEventDay(date);
+    const eventDay = new Date(`${date}T00:00:00`).getTime();
     const diff = Math.round((eventDay - today) / 86400000);
-    if (past) {
-      if (diff === -1) return 'Yesterday';
-      return `${Math.abs(diff)} days ago`;
-    }
     if (diff === 0) return 'Today';
     if (diff === 1) return 'Tomorrow';
     return `${diff} days to go`;
@@ -96,8 +88,6 @@
     return {
       ...event,
       enabled: event?.enabled !== false,
-      galleryImages: Array.isArray(event?.galleryImages) ? event.galleryImages : [],
-      galleryVideos: Array.isArray(event?.galleryVideos) ? event.galleryVideos : [],
       ticketTiers: normalizedTiers,
       ticketing: {
         capacity: Number(event?.ticketing?.capacity || 0) || 0,
@@ -151,78 +141,17 @@
     }
   };
 
-  const normalizeVideoEmbed = (url) => {
-    const raw = String(url || '').trim();
-    if (!raw) return null;
-    if (/youtube-nocookie\.com\/embed\//i.test(raw) || /youtube\.com\/embed\//i.test(raw)) return raw;
-
-    try {
-      const parsed = new URL(raw);
-      if (/youtu\.be$/i.test(parsed.hostname)) {
-        const id = parsed.pathname.replace(/^\/+/, '');
-        return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
-      }
-      if (/youtube\.com$/i.test(parsed.hostname) || /www\.youtube\.com$/i.test(parsed.hostname)) {
-        const id = parsed.searchParams.get('v');
-        return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
-      }
-    } catch {}
-
-    return null;
-  };
-
-  const renderGallery = (event) => {
-    const images = event.galleryImages
-      .map((image, index) => `
-        <a href="${SiteApp.escapeHtml(SiteApp.resolvePath(image))}" target="_blank" rel="noopener noreferrer" class="overflow-hidden rounded-2xl border border-amber-200/15 bg-black/20">
-          <img src="${SiteApp.escapeHtml(SiteApp.resolvePath(image))}" alt="${SiteApp.escapeHtml(event.title)} gallery image ${index + 1}" class="h-28 w-full object-cover transition duration-300 hover:scale-[1.03]" loading="lazy" />
-        </a>
-      `)
-      .join('');
-
-    const videos = event.galleryVideos
-      .map((video) => {
-        const embed = normalizeVideoEmbed(video);
-        if (embed) {
-          return `
-            <div class="overflow-hidden rounded-2xl border border-amber-200/15 bg-black/20">
-              <iframe class="aspect-video w-full" src="${SiteApp.escapeHtml(embed)}" title="${SiteApp.escapeHtml(event.title)} video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
-          `;
-        }
-        const safeHref = SiteApp.safeExternalHref(video);
-        if (!safeHref) return '';
-        return `
-          <a href="${SiteApp.escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-full border border-amber-200/25 bg-black/25 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-amber-100">
-            Watch video
-          </a>
-        `;
-      })
-      .join('');
-
-    const body = [images ? `<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${images}</div>` : '', videos ? `<div class="mt-3 grid gap-3">${videos}</div>` : ''].join('');
-    if (!body) return '';
-
-    return `
-      <section class="rounded-2xl border border-amber-200/15 bg-black/20 p-4">
-        <p class="text-xs uppercase tracking-[0.14em] text-amber-200">Moments & Media</p>
-        <div class="mt-3">${body}</div>
-      </section>
-    `;
-  };
-
-  const renderEvent = (event, settings, availability, options = {}) => {
-    const past = options.past === true;
+  const renderEvent = (event, settings, availability) => {
     const remaining = availability?.remaining;
     const capacityReached = Number.isFinite(remaining) && remaining <= 0;
-    const soldOut = !past && (String(event.status || '').toLowerCase() !== 'available' || capacityReached);
+    const soldOut = String(event.status || '').toLowerCase() !== 'available' || capacityReached;
     const tiers = event.ticketTiers;
     const hasPurchasableTiers = tiers.length > 0;
     const maxPerPurchase = Math.max(1, event.ticketing.maxPerPurchase || 1);
     const eventSlug = event.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const eventId = event.id || eventSlug;
-    const buyEnabled = !past && settings.mpesa?.enabled && event.buttons.buyTicketEnabled && !soldOut && hasPurchasableTiers;
-    const capacityText = !past && event.ticketing.capacity > 0
+    const buyEnabled = settings.mpesa?.enabled && event.buttons.buyTicketEnabled && !soldOut && hasPurchasableTiers;
+    const capacityText = event.ticketing.capacity > 0
       ? `<p class="text-xs text-amber-100/80">Available tickets: ${SiteApp.escapeHtml(String(Number.isFinite(remaining) ? remaining : event.ticketing.capacity))}</p>`
       : '';
 
@@ -242,16 +171,16 @@
         <div class="space-y-4 p-5">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <h2 class="font-display text-3xl leading-tight text-white">${SiteApp.escapeHtml(event.title)}</h2>
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-2">
               ${event.featured ? '<span class="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide bg-amber-200/20 text-amber-100">Featured</span>' : ''}
-              <span class="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide bg-amber-200/20 text-amber-100">${SiteApp.escapeHtml(eventBadge(event.date, past))}</span>
-              <span class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${past ? 'bg-slate-200/15 text-slate-100' : soldOut ? 'bg-rose-200/20 text-rose-100' : 'bg-emerald-200/20 text-emerald-100'}">${past ? 'Past Gathering' : soldOut ? 'Sold Out' : 'Available'}</span>
+              <span class="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide bg-amber-200/20 text-amber-100">${SiteApp.escapeHtml(eventBadge(event.date))}</span>
+              <span class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${soldOut ? 'bg-rose-200/20 text-rose-100' : 'bg-emerald-200/20 text-emerald-100'}">${soldOut ? 'Sold Out' : 'Available'}</span>
             </div>
           </div>
           <p class="text-sm text-amber-50/80">${SiteApp.formatDate(event.date)} - ${SiteApp.escapeHtml(event.time || '')} - ${SiteApp.escapeHtml(event.venue || '')}</p>
           ${event.yearTheme ? `<p class="text-sm text-amber-100">Theme: ${SiteApp.escapeHtml(event.yearTheme)}</p>` : ''}
           <p class="text-sm text-amber-50/80">${SiteApp.escapeHtml(event.description || '')}</p>
-          ${tiersHtml ? `<ul class="space-y-1">${tiersHtml}</ul>` : ''}
+          ${tiersHtml ? `<ul class="space-y-1">${tiersHtml}</ul>` : '<p class="text-xs text-amber-100/80">No ticket tier is configured yet.</p>'}
           ${capacityText}
           ${buyEnabled ? `
             <form class="rounded-xl border border-amber-200/20 bg-black/20 p-3" data-buy-form="true">
@@ -269,10 +198,9 @@
               </div>
               <p class="mt-2 hidden text-xs" data-buy-feedback="true"></p>
             </form>
-          ` : past ? '<p class="rounded-xl border border-amber-200/15 bg-black/20 px-4 py-3 text-sm text-amber-50/80">This gathering has concluded, but the story and media remain here for visitors who missed it.</p>' : ''}
-          ${renderGallery(event)}
+          ` : ''}
           <div class="flex flex-wrap gap-3">
-            ${!past && event.buttons.addToCalendarEnabled ? '<button class="btn-secondary inline-flex rounded-full px-4 py-2 text-sm font-medium" data-add-calendar="true">Save Date</button>' : ''}
+            ${event.buttons.addToCalendarEnabled ? '<button class="btn-secondary inline-flex rounded-full px-4 py-2 text-sm font-medium" data-add-calendar="true">Save Date</button>' : ''}
             ${event.buttons.shareEnabled ? '<button class="btn-secondary inline-flex rounded-full px-4 py-2 text-sm font-medium" data-share-event="true">Share</button>' : ''}
           </div>
           <p class="hidden text-xs text-emerald-200" data-share-feedback="true">Event link shared.</p>
@@ -330,7 +258,9 @@
           });
 
           const data = await res.json();
-          if (!res.ok) throw new Error(data?.error || 'Could not initiate payment');
+          if (!res.ok) {
+            throw new Error(data?.error || 'Could not initiate payment');
+          }
 
           if (message) {
             message.textContent = data.customerMessage || 'STK Push sent. Complete payment on your phone.';
@@ -389,87 +319,51 @@
       const eventsPageEnabled = page.enabled !== false;
       const events = SiteApp.listFromPayload(payload)
         .map(normalizeEvent)
-        .filter((event) => event.enabled && event.id)
+        .filter((event) => event.enabled && event.id && isUpcoming(event.date))
         .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-      const upcomingEvents = events.filter((event) => isUpcoming(event.date));
-      const recentEvents = events
-        .filter((event) => !isUpcoming(event.date))
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      if (!upcomingListEl) return;
-      if (!eventsPageEnabled || (!upcomingEvents.length && !recentEvents.length)) {
-        upcomingListEl.innerHTML = `
+      if (!listEl) return;
+      if (!eventsPageEnabled || !events.length) {
+        listEl.innerHTML = `
           <article class="section-shell p-6 sm:p-8">
-            <h2 class="font-display text-3xl text-white">No Events Published Yet</h2>
-            <p class="mt-2 text-sm text-amber-50/80">No event is open or archived right now. Please check back soon.</p>
+            <h2 class="font-display text-3xl text-white">No Upcoming Events</h2>
+            <p class="mt-2 text-sm text-amber-50/80">No event is open for booking right now. Please check back soon.</p>
           </article>
         `;
-        if (recentSectionEl) recentSectionEl.classList.add('hidden');
         return;
       }
 
-      const renderUpcoming = () => {
-        if (!upcomingListEl) return;
-        if (!upcomingEvents.length) {
-          upcomingListEl.innerHTML = `
-            <article class="section-shell p-6 sm:p-8">
-              <h2 class="font-display text-3xl text-white">No Upcoming Events</h2>
-              <p class="mt-2 text-sm text-amber-50/80">There is nothing open for booking right now, but you can still explore recent gatherings below.</p>
-            </article>
-          `;
-          return;
-        }
-
-        upcomingListEl.innerHTML = upcomingEvents.map((event) => renderEvent(event, siteSettings, availabilityMap.get(event.id))).join('');
-        upcomingListEl.querySelectorAll('article[data-event-id]').forEach((card) => {
+      const rerender = () => {
+        if (!listEl) return;
+        listEl.innerHTML = events.map((event) => renderEvent(event, siteSettings, availabilityMap.get(event.id))).join('');
+        listEl.querySelectorAll('article[data-event-id]').forEach((card) => {
           const eventId = card.getAttribute('data-event-id');
-          const event = upcomingEvents.find((item) => item.id === eventId);
-          if (!event) return;
-          attachHandlers(card, event, apiConfig, async (targetEventId, qty) => {
-            if (targetEventId && Number.isFinite(qty)) {
-              const current = availabilityMap.get(targetEventId);
-              if (current && Number.isFinite(current.remaining)) {
-                current.remaining = Math.max(0, current.remaining - qty);
-                availabilityMap.set(targetEventId, current);
-                renderUpcoming();
-                return;
+          const event = events.find((item) => item.id === eventId);
+          if (event) {
+            attachHandlers(card, event, apiConfig, async (targetEventId, qty) => {
+              if (targetEventId && Number.isFinite(qty)) {
+                const current = availabilityMap.get(targetEventId);
+                if (current && Number.isFinite(current.remaining)) {
+                  current.remaining = Math.max(0, current.remaining - qty);
+                  availabilityMap.set(targetEventId, current);
+                  rerender();
+                  return;
+                }
               }
-            }
-            availabilityMap = await fetchAvailability(apiConfig);
-            renderUpcoming();
-          });
+              availabilityMap = await fetchAvailability(apiConfig);
+              rerender();
+            });
+          }
         });
       };
 
-      const renderRecent = () => {
-        if (!recentSectionEl || !recentListEl) return;
-        if (!recentEvents.length) {
-          recentSectionEl.classList.add('hidden');
-          recentListEl.innerHTML = '';
-          return;
-        }
-        recentSectionEl.classList.remove('hidden');
-        recentListEl.innerHTML = recentEvents.map((event) => renderEvent(event, siteSettings, availabilityMap.get(event.id), { past: true })).join('');
-        recentListEl.querySelectorAll('article[data-event-id]').forEach((card) => {
-          const eventId = card.getAttribute('data-event-id');
-          const event = recentEvents.find((item) => item.id === eventId);
-          if (event) attachHandlers(card, event, apiConfig);
-        });
-      };
-
-      renderUpcoming();
-      renderRecent();
-
-      if (upcomingEvents.length) {
-        setInterval(async () => {
-          availabilityMap = await fetchAvailability(apiConfig);
-          renderUpcoming();
-        }, 15000);
-      }
+      rerender();
+      setInterval(async () => {
+        availabilityMap = await fetchAvailability(apiConfig);
+        rerender();
+      }, 15000);
     })
     .catch(() => {
-      if (upcomingListEl) upcomingListEl.innerHTML = '<p class="text-sm text-rose-300">Could not load events.</p>';
-      if (recentSectionEl) recentSectionEl.classList.add('hidden');
+      if (listEl) listEl.innerHTML = '<p class="text-sm text-rose-300">Could not load events.</p>';
     });
 })();
