@@ -92,6 +92,16 @@
   status = 200
 
 [[redirects]]
+  from = "/manage-site"
+  to = "/admin/"
+  status = 302
+
+[[redirects]]
+  from = "/manage-site/"
+  to = "/admin/"
+  status = 302
+
+[[redirects]]
   from = "/admin/*"
   to = "/admin/index.html"
   status = 200
@@ -107,6 +117,17 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "same-origin"
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+[[headers]]
+  for = "/manage-site"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+[[headers]]
+  for = "/manage-site/"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
 
 [[headers]]
   for = "/scan.html"
