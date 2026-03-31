@@ -316,32 +316,6 @@
       .join('');
   };
 
-  const footerQuickLinksHtml = (settings) => {
-    const configuredLinks = Array.isArray(settings?.footer?.links) ? settings.footer.links : [];
-    const items = configuredLinks
-      .map((item) => ({
-        label: String(item?.label || '').trim(),
-        href: String(item?.href || '').trim()
-      }))
-      .filter((item) => item.label && item.href);
-
-    const hasOwnerLink = items.some((item) => /^\/admin\/?$/i.test(item.href));
-    if (!hasOwnerLink) items.push({ label: 'Owner Login', href: '/admin/' });
-
-    return items
-      .map((item) => {
-        const rawHref = item.href;
-        const isExternal = /^(https?:|mailto:|tel:)/i.test(rawHref);
-        const href = isExternal ? safeExternalHref(rawHref) : resolvePath(rawHref);
-        if (!href) return '';
-        const target = /^https?:/i.test(rawHref) ? ' target="_blank"' : '';
-        const rel = /^https?:/i.test(rawHref) ? ' rel="noopener noreferrer"' : '';
-        return `<a class="inline-flex min-h-[2.3rem] items-center justify-center rounded-full border border-amber-200/25 bg-black/35 px-4 py-2 text-[0.82rem] text-[#d7caa9] transition hover:-translate-y-px hover:border-amber-200/50 hover:bg-black/55 hover:text-[#fff4d2] focus-visible:-translate-y-px focus-visible:border-amber-200/50 focus-visible:bg-black/55 focus-visible:text-[#fff4d2]" href="${escapeHtml(href)}"${target}${rel}>${escapeHtml(item.label)}</a>`;
-      })
-      .filter(Boolean)
-      .join('');
-  };
-
   const wordmarkHtml = (logoText) => {
     const name = String(logoText || 'Essy Singer').trim().split(/\s+/);
     const first = name[0] || 'Essy';
@@ -478,7 +452,6 @@
     if (!mount) return;
 
     const social = socialHtml(settings);
-    const quickLinks = footerQuickLinksHtml(settings);
 
     mount.innerHTML = `
       <footer class="border-t border-amber-200/20 bg-black/30">
@@ -492,10 +465,6 @@
             <section>
               <p class="footer-section-label text-xs uppercase tracking-[0.16em]">Follow</p>
               <div class="mt-3 flex flex-wrap gap-3">${social || '<p class="site-footer-location text-xs">Add social links in settings.</p>'}</div>
-            </section>
-            <section>
-              <p class="footer-section-label text-xs uppercase tracking-[0.16em]">Quick Links</p>
-              <div class="mt-3 flex flex-wrap gap-3">${quickLinks}</div>
             </section>
           </div>
           <div class="site-footer-legal pt-4 text-center text-xs">
